@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trận Chiến Đặt Nấm Tình Yêu</title>
+    <style>
+        body { margin: 0; padding: 0; background: #222; color: #fff; font-family: sans-serif; text-align: center; overflow: hidden; }
+        #lobby, #game-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        #screen { width: 320px; height: 350px; background: #55b455; position: relative; border: 4px solid #fff; overflow: hidden; }
+        .player { width: 30px; height: 30px; position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
+        .nam { background: #3498db; }
+        .nu { background: #e74c3c; }
+        .mushroom { width: 20px; height: 20px; background: #f1c40f; position: absolute; border-radius: 50%; border: 2px dashed red; }
+        .star { width: 20px; height: 20px; background: #ff00ff; position: absolute; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+        #controls { margin-top: 15px; display: grid; grid-template-columns: repeat(3, 60px); gap: 10px; }
+        button { padding: 15px; font-size: 16px; font-weight: bold; background: #eee; border: none; border-radius: 8px; }
+        .btn-action { background: #e67e22; color: white; grid-column: span 3; }
+        #info-board { margin-bottom: 10px; font-size: 14px; }
+    </style>
+    <!-- Tích hợp Socket.IO client -->
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+
+    <!-- MÀN HÌNH CHỌN PHÁI -->
+    <div id="lobby">
+        <h2>CHỌN NHÂN VẬT</h2>
+        <button style="background:#3498db; color:white; margin:10px; width:150px;" onclick="join('nam')">NAM</button>
+        <button style="background:#e74c3c; color:white; margin:10px; width:150px;" onclick="join('nu')">NỮ</button>
+    </div>
+
+    <!-- MÀN HÌNH CHƠI GAME -->
+    <div id="game-container" style="display: none;">
+        <div id="info-board">
+            <span id="level-txt">Cửa: 1</span> | <span id="reward-txt">Phần thưởng: Đang tải...</span><br>
+            <span id="hp-txt">Máu của bạn: 100</span>
+        </div>
+        <div id="screen"></div>
+        
+        <!-- NÚT BẤM ĐIỀU KHIỂN TRÊN ĐIỆN THOẠI -->
+        <div id="controls">
+            <div></div><button onclick="move('up')">▲</button><div></div>
+            <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
+            <div></div><button onclick="move('down')">▼</button><div></div>
+            <button class="btn-action" onclick="plantMushroom()">ĐẶT NẤM</button>
+        </div>
+    </div>
+
+    <script>
+        // THAY ĐƯỜNG LINK RENDER CỦA BẠN VÀO ĐÂY
+        const socket = io("https://mushroom-server.onrender.com"); 
+        
+        let myId = null;
+        let myGender = null;
+
+        function join(gender) {
+            myGender = gender;
+            socket.emit('joinGame', gender);
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+        }
+
+        socket.on('connect', () => { myId = socket.id; });
+
+        socket.on('initLevel', (data) => {
+            document.getElementById('level-txt').innerText = "Cửa: " + data.level;
+            document.getElementById('reward-txt').innerText = "Thắng được: " + (myGender === 'nam' ? data.reward.nam : data.reward.nu);
+        });
+
+        socket.on('updatePlayers', (players) => {
+            const screen = document.getElementById('screen');
+            // Xóa người chơi cũ để vẽ lại
+            document.querySelectorAll('.player').forEach(e => e.remove());
+            
+            for (let id in players) {
+                let p = players[id];
+                let div = document.createElement('div');
+                div.className = `player ${p.gender}`;
+                div.style.left = p.x + 'px';
+                div.style.top = p.y + 'px';
+                div.innerText = p.gender === 'nam' ? 'Nam' : 'Nữ';
+                screen.appendChild(div);
+
+                if (id === myId) {
+                    document.getElementById('hp-txt').innerText = `Máu của bạn: ${p.hp} | Sức mạnh: ${p.power}`;
+                }
+            }
+        });
+
+        socket.on('updateMushrooms', (mushrooms) => {
+            document.querySelectorAll('.mushroom').forEach(e => e.remove());
+            mushrooms.forEach(shroom => {
+                let div = document.createElement('div');
+                div.className = 'mushroom';
+                div.style.left = shroom.x + 'px';
+                div.style.top = shroom.y + 'px';
+                document.getElementById('screen').appendChild(div);
+            });
+        });
+
+        socket.on('mushroomExplode', (shroom) => {
+            // Logic kiểm tra xem người chơi kia có đứng gần nấm nổ không (tính khoảng cách đơn giản)
+            // Nếu đứng gần, tự gửi lệnh trúng bom lên server xử lý trừ máu
+            // (Đoạn này làm cơ bản, bạn có thể tối ưu thêm bằng thuật toán va chạm)
+            if (shroom.owner !== myId) {
+                socket.emit('takeDamage', myId);
+            }
+        });
+
+        socket.on('gameOver', (data) => {
+            alert(`Trận đấu kết thúc!\nNgười thắng: ${data.winner.toUpperCase()}\nPhần thưởng thực hiện ngay: ${data.reward}`);
+        });
+
+        // Hàm di chuyển cho các nút bấm điện thoại
+        function move(dir) {
+            // Gửi tọa độ di chuyển lên server (Ở đây đơn giản hóa bằng client tự tính rồi phát sau)
+            // Để mượt mà hơn có thể phát triển thêm hệ thống đồng bộ hóa tọa độ X, Y trực tiếp.
+        }
+
+        function plantMushroom() {
+            // Lấy tọa độ giả định để đặt nấm tại vị trí nhân vật hiện tại
+            socket.emit('placeMushroom', { x: 150, y: 150 });
+        }
+    </script>
+</body>
+</html>
