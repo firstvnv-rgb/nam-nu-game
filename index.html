@@ -3,52 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nấm Tình Yêu Pro - Online</title>
+    <title>Nấm Tình Yêu Pro V2</title>
     <style>
-        body { margin: 0; padding: 0; background: #111; font-family: 'Courier New', Courier, monospace; overflow: hidden; user-select: none; }
-        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #1e1e2f, #111119); }
-        .btn { padding: 15px 40px; font-size: 20px; font-weight: bold; border: none; border-radius: 30px; margin: 15px; cursor: pointer; color: white; boxShadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.2s; }
+        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; }
+        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #1a1a24; }
+        .btn { padding: 15px 40px; font-size: 20px; font-weight: bold; border: none; border-radius: 30px; margin: 15px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
         .btn-nam { background: linear-gradient(45deg, #00c6ff, #0072ff); }
         .btn-nu { background: linear-gradient(45deg, #f857a6, #ff5858); }
-        #ui-layer { position: absolute; top: 10px; left: 10px; color: white; font-size: 14px; pointer-events: none; text-shadow: 2px 2px 4px #000; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; width: calc(100% - 40px); }
-        #btn-plant { position: absolute; bottom: 30px; right: 30px; width: 80px; height: 80px; background: radial-gradient(#ff9900, #cc5200); border-radius: 50%; border: 3px solid #fff; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 6px 10px rgba(0,0,0,0.5); }
+        #ui-layer { position: absolute; top: 10px; left: 10px; color: white; font-size: 14px; pointer-events: none; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; width: calc(100% - 40px); z-index: 10; }
+        #btn-plant { position: absolute; bottom: 30px; right: 30px; width: 85px; height: 85px; background: radial-gradient(#ff6600, #cc3300); border-radius: 50%; border: 3px solid #fff; color: white; font-weight: bold; font-size: 16px; z-index: 10; }
     </style>
-    <!-- Nhúng thư viện Game Phaser 3 và Socket.io -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
 
-    <!-- MÀN HÌNH CHỌN NHÂN VẬT -->
     <div id="lobby">
-        <h1 style="text-align:center; color: #ffeb3b; text-shadow: 0 0 10px #ff9800;">ĐẶT NẤM TÌNH YÊU</h1>
-        <p>Chọn nhân vật của bạn để vào trận:</p>
+        <h1 style="color: #ffeb3b; text-shadow: 0 0 10px #ff9800;">ĐẶT NẤM & DIỆT QUÁI</h1>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
 
-    <!-- CÁC LỚP THÔNG TIN TRÊN MÀN HÌNH ĐIỆN THOẠI -->
     <div id="ui-layer" style="display: none;">
-        <div id="info-level" style="font-weight: bold; color: #ffeb3b; font-size: 18px;">Cửa: 1 - Hiệp: 1</div>
-        <div id="info-reward" style="margin-top: 4px; color: #00ffcc;">Phần thưởng: Đang đợi...</div>
-        <div id="info-status" style="margin-top: 4px; font-size: 12px; color: #ff9999;">Sức mạnh hiện tại: 15</div>
+        <div id="info-level" style="font-weight: bold; color: #ffeb3b; font-size: 16px;">Cửa: 1 - Hiệp: 1</div>
+        <div id="info-reward" style="color: #00ffcc; margin-top: 2px;">Phần thưởng: Đang tải...</div>
+        <div id="info-status" style="color: #ff9999; margin-top: 2px; font-weight: bold;">MÁU: 100/100</div>
     </div>
     
     <button id="btn-plant" style="display: none;" onclick="handlePlant()">ĐẶT<br>NẤM</button>
 
     <script>
-        // ĐIỀN ĐƯỜNG LINK RENDER CỦA BẠN VÀO ĐÂY
+        // === ⚠️ NHỚ THAY ĐƯỜNG LINK RENDER CỦA BẠN VÀO ĐÂY VÌ LINK DƯỚI CHỈ LÀ VÍ DỤ ===
         const socket = io("https://mushroom-server.onrender.com");
 
         let myGender = null;
-        let gameActive = false;
-        let phaserGame = null;
         let sceneContext = null;
         let localPlayer = null;
         let remotePlayer = null;
+        let bricksGroup, monstersGroup, mushroomsGroup;
         let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
-        let mushroomsGroup;
-        let starSprite = null;
+        let lastDamageTime = 0;
 
         function startGame(gender) {
             myGender = gender;
@@ -56,7 +50,6 @@
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('btn-plant').style.display = 'block';
             
-            // Khởi chạy bộ dựng game Phaser 3
             initPhaser();
             socket.emit('joinGame', gender);
         }
@@ -67,175 +60,166 @@
                 width: window.innerWidth,
                 height: window.innerHeight,
                 parent: document.body,
-                physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
+                physics: { default: 'arcade', arcade: { debug: false } },
                 scene: { preload: preload, create: create, update: update }
             };
-            phaserGame = new Phaser.Game(config);
+            new Phaser.Game(config);
         }
 
         function preload() {
             sceneContext = this;
-            // Tạo hình ảnh đồ họa bằng Code (Canvas) để không cần tải file ảnh từ ngoài vào
-            // Tạo texture nhân vật Nam
+
+            // Tự vẽ texture Tường Gạch màu Cam Đỏ siêu chất
+            let canvasBrick = document.createElement('canvas'); canvasBrick.width = 40; canvasBrick.height = 40;
+            let ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#cc4422'; ctx.fillRect(0,0,40,40);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(0,0,40,40);
+            this.textures.addCanvas('brick', canvasBrick);
+
+            // Tự vẽ Quái Vật màu Tím phát sáng độc hại
+            let canvasMonster = document.createElement('canvas'); canvasMonster.width = 30; canvasMonster.height = 30;
+            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#9c27b0'; ctx.beginPath(); ctx.arc(15,15,15,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,8,5,5); ctx.fillRect(19,8,5,5); // Mắt quái
+            this.textures.addCanvas('monster', canvasMonster);
+
+            // Các texture người chơi và nấm từ bản trước
             let canvasNam = document.createElement('canvas'); canvasNam.width = 32; canvasNam.height = 32;
-            let ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00c6ff'; ctx.beginPath(); ctx.arc(16,16,16,0,Math.PI*2); ctx.fill();
+            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00c6ff'; ctx.beginPath(); ctx.arc(16,16,16,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nam', canvasNam);
 
-            // Tạo texture nhân vật Nữ
             let canvasNu = document.createElement('canvas'); canvasNu.width = 32; canvasNu.height = 32;
             ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff5858'; ctx.beginPath(); ctx.arc(16,16,16,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nu', canvasNu);
 
-            // Tạo texture Quả Nấm độc
             let canvasShroom = document.createElement('canvas'); canvasShroom.width = 24; canvasShroom.height = 24;
             ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(12,10,12,0,Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.fillRect(9,12,6,12);
             this.textures.addCanvas('shroom', canvasShroom);
-
-            // Tạo Ngôi Sao Hy Vọng
-            let canvasStar = document.createElement('canvas'); canvasStar.width = 30; canvasStar.height = 30;
-            ctx = canvasStar.getContext('2d'); ctx.fillStyle = '#e040fb'; ctx.font = '24px Arial'; ctx.fillText('⭐', 2, 24);
-            this.textures.addCanvas('star', canvasStar);
         }
 
         function create() {
+            bricksGroup = this.physics.add.staticGroup();
+            monstersGroup = this.physics.add.group();
             mushroomsGroup = this.physics.add.group();
 
-            // Vẽ nền lưới cỏ ô vuông hiện đại
-            let graphics = this.add.graphics();
-            graphics.lineStyle(1, 0x222233, 0.8);
-            for (let i = 0; i < window.innerWidth; i += 40) graphics.lineBetween(i, 0, i, window.innerHeight);
-            for (let j = 0; j < window.innerHeight; j += 40) graphics.lineBetween(0, j, window.innerWidth, j);
+            // Vẽ nền tối
+            this.cameras.main.setBackgroundColor('#14141f');
 
-            // Thiết lập điều khiển vuốt màn hình (Joystick ảo) trên điện thoại
+            // Cài đặt Joystick chạm màn hình bên trái để di chuyển
             this.input.on('pointerdown', (pointer) => {
-                if (pointer.x < window.innerWidth / 2) { // Nhấn nửa màn hình bên trái để di chuyển
-                    joystick.active = true;
-                    joystick.startX = pointer.x;
-                    joystick.startY = pointer.y;
+                if (pointer.x < window.innerWidth / 2) {
+                    joystick.active = true; joystick.startX = pointer.x; joystick.startY = pointer.y;
                 }
             });
             this.input.on('pointermove', (pointer) => {
-                if (joystick.active) {
-                    joystick.moveX = pointer.x - joystick.startX;
-                    joystick.moveY = pointer.y - joystick.startY;
-                }
+                if (joystick.active) { joystick.moveX = pointer.x - joystick.startX; joystick.moveY = pointer.y - joystick.startY; }
             });
             this.input.on('pointerup', () => { joystick.active = false; joystick.moveX = 0; joystick.moveY = 0; });
 
-            // LẮNG NGHE SỰ KIỆN TỪ SERVER RENDER
+            // SỰ KIỆN TỪ SERVER
             socket.on('initLevel', (data) => {
                 document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-                document.getElementById('info-reward').innerText = `Phần thưởng nếu thắng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
+                document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
+                
+                // Vẽ tường gạch lên bản đồ từ dữ liệu server gửi về
+                bricksGroup.clear(true, true);
+                data.bricks.forEach(b => { bricksGroup.create(b.x, b.y, 'brick'); });
             });
 
             socket.on('updatePlayers', (serverPlayers) => {
-                updatePlayersLogic(serverPlayers);
+                for (let id in serverPlayers) {
+                    let p = serverPlayers[id];
+                    if (id === socket.id) {
+                        if (!localPlayer) {
+                            localPlayer = sceneContext.physics.add.sprite(p.x, p.y, `p_${p.gender}`);
+                            localPlayer.setCollideWorldBounds(true);
+                            // Bật tính năng va chạm CHẶN KHÔNG CHO ĐI XUYÊN TƯỜNG
+                            sceneContext.physics.add.collider(localPlayer, bricksGroup);
+                        } else {
+                            localPlayer.setPosition(p.x, p.y);
+                        }
+                        document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100 | Lực bom: ${p.power}`;
+                    } else {
+                        if (!remotePlayer) {
+                            remotePlayer = sceneContext.add.sprite(p.x, p.y, `p_${p.gender}`);
+                            remotePlayer.id = id;
+                        } else {
+                            remotePlayer.setPosition(p.x, p.y);
+                        }
+                    }
+                }
             });
 
             socket.on('playerMoved', (data) => {
-                if (remotePlayer && remotePlayer.id === data.id) {
-                    remotePlayer.setPosition(data.x, data.y);
-                }
+                if (remotePlayer && remotePlayer.id === data.id) remotePlayer.setPosition(data.x, data.y);
+            });
+
+            // Đồng bộ vị trí quái vật từ server liên tục
+            socket.on('updateMonsters', (serverMonsters) => {
+                monstersGroup.clear(true, true);
+                serverMonsters.forEach(m => {
+                    let mon = monstersGroup.create(m.x, m.y, 'monster');
+                    mon.id = m.id;
+                });
             });
 
             socket.on('mushroomPlaced', (shroom) => {
                 let m = sceneContext.physics.add.sprite(shroom.x, shroom.y, 'shroom');
-                m.id = shroom.id;
-                m.owner = shroom.owner;
-                m.power = shroom.power;
+                m.id = shroom.id; m.owner = shroom.owner; m.power = shroom.power;
                 mushroomsGroup.add(m);
             });
 
             socket.on('mushroomExploded', (shroom) => {
                 mushroomsGroup.getChildren().forEach(m => {
                     if (m && m.id === shroom.id) {
-                        // Hiệu ứng nổ lan tỏa đồ họa đẹp mắt
-                        let circle = sceneContext.add.circle(m.x, m.y, 10, 0xffcc00, 0.6);
+                        let circle = sceneContext.add.circle(m.x, m.y, 10, 0xff5500, 0.7);
                         sceneContext.tweens.add({
-                            targets: circle, radius: 70, alpha: 0, duration: 300,
-                            onComplete: () => { circle.destroy(); }
+                            targets: circle, radius: 75, alpha: 0, duration: 250,
+                            onComplete: () => circle.destroy()
                         });
 
-                        // Tính va chạm vụ nổ với bản thân nhân vật
-                        if (localPlayer && Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, m.x, m.y) < 70) {
-                            if (m.owner !== socket.id) { // Nếu dẫm phải nấm đối thủ
-                                socket.emit('hitMushroom', { targetId: socket.id, damage: m.power });
-                            }
+                        // Nếu dính bom nấm của đối phương
+                        if (localPlayer && Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, m.x, m.y) < 75) {
+                            if (m.owner !== socket.id) socket.emit('takeDamage', { amount: m.power });
                         }
                         m.destroy();
                     }
                 });
             });
 
-            socket.on('starSpawned', (starData) => {
-                starSprite = sceneContext.physics.add.sprite(starData.x, starData.y, 'star');
-                sceneContext.tweens.add({ targets: starSprite, scale: 1.3, duration: 500, yoyo: true, repeat: -1 });
-            });
-
-            socket.on('starClaimed', (data) => {
-                if (starSprite) { starSprite.destroy(); starSprite = null; }
-                alert(`Ngôi Sao Hy Vọng đã thuộc về [${data.gender.toUpperCase()}]! Sức mạnh được X2!`);
-            });
-
-            socket.on('gameOver', (data) => {
-                alert(`KẾT THÚC CỬA!\nNgười Thắng: ${data.winner.toUpperCase()}\nHành Động: ${data.reward}`);
-            });
+            socket.on('gameOver', (data) => { alert(`KẾT THÚC CỬA!\nNgười Thắng: ${data.winner.toUpperCase()}\nHành động: ${data.reward}`); });
 
             socket.on('resetMatch', (data) => {
                 document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-                document.getElementById('info-reward').innerText = `Phần thưởng nếu thắng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
-                updatePlayersLogic(data.players);
+                document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
             });
-        }
-
-        function updatePlayersLogic(serverPlayers) {
-            for (let id in serverPlayers) {
-                let p = serverPlayers[id];
-                if (id === socket.id) {
-                    if (!localPlayer) {
-                        localPlayer = sceneContext.physics.add.sprite(p.x, p.y, `p_${p.gender}`);
-                        localPlayer.setCollideWorldBounds(true);
-                    } else {
-                        localPlayer.setPosition(p.x, p.y);
-                    }
-                    document.getElementById('info-status').innerText = `MÁU: ${p.hp}/100 | Lực Đặt Nấm: ${p.power}`;
-                } else {
-                    if (!remotePlayer) {
-                        remotePlayer = sceneContext.add.sprite(p.x, p.y, `p_${p.gender}`);
-                        remotePlayer.id = id;
-                    } else {
-                        remotePlayer.setPosition(p.x, p.y);
-                    }
-                }
-            }
         }
 
         function update() {
             if (localPlayer && joystick.active) {
-                // Tính toán vận tốc từ góc kéo joystick
-                let speed = 200;
+                let speed = 180;
                 let angle = Math.atan2(joystick.moveY, joystick.moveX);
                 localPlayer.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-                
-                // Gửi vị trí liên tục cho đối thủ
                 socket.emit('playerMove', { x: localPlayer.x, y: localPlayer.y });
             } else if (localPlayer) {
                 localPlayer.body.setVelocity(0, 0);
             }
 
-            // Kiểm tra nhặt Ngôi Sao Hy Vọng
-            if (localPlayer && starSprite) {
-                if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, starSprite.x, starSprite.y) < 30) {
-                    socket.emit('claimStar');
-                }
+            // Kiểm tra va chạm với Quái vật (Nếu đụng quái, cứ mỗi 0.5s trừ 10 máu)
+            if (localPlayer && monstersGroup.getChildren().length > 0) {
+                monstersGroup.getChildren().forEach(monster => {
+                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < 25) {
+                        let now = Date.now();
+                        if (now - lastDamageTime > 500) {
+                            lastDamageTime = now;
+                            socket.emit('takeDamage', { amount: 10 });
+                            sceneContext.cameras.main.flash(100, 255, 0, 0); // Nháy đỏ màn hình khi bị cắn
+                        }
+                    }
+                });
             }
         }
 
         function handlePlant() {
-            if (localPlayer) {
-                socket.emit('placeMushroom', { x: localPlayer.x, y: localPlayer.y });
-            }
+            if (localPlayer) socket.emit('placeMushroom', { x: localPlayer.x, y: localPlayer.y });
         }
     </script>
 </body>
