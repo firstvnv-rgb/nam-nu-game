@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nấm Tình Yêu Pro V2</title>
+    <title>Bomberman Nấm Tình Yêu Toàn Diện</title>
     <style>
-        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; }
-        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #1a1a24; }
-        .btn { padding: 15px 40px; font-size: 20px; font-weight: bold; border: none; border-radius: 30px; margin: 15px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-        .btn-nam { background: linear-gradient(45deg, #00c6ff, #0072ff); }
-        .btn-nu { background: linear-gradient(45deg, #f857a6, #ff5858); }
-        #ui-layer { position: absolute; top: 10px; left: 10px; color: white; font-size: 14px; pointer-events: none; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; width: calc(100% - 40px); z-index: 10; }
-        #btn-plant { position: absolute; bottom: 30px; right: 30px; width: 85px; height: 85px; background: radial-gradient(#ff6600, #cc3300); border-radius: 50%; border: 3px solid #fff; color: white; font-weight: bold; font-size: 16px; z-index: 10; }
+        body { margin: 0; padding: 0; background: #0b0b10; font-family: sans-serif; overflow: hidden; user-select: none; }
+        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #13131c; }
+        .btn { padding: 15px 45px; font-size: 20px; font-weight: bold; border: none; border-radius: 30px; margin: 15px; color: white; box-shadow: 0 5px 20px rgba(0,0,0,0.5); font-family: sans-serif;}
+        .btn-nam { background: linear-gradient(45deg, #00d2ff, #0066ff); }
+        .btn-nu { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+        #ui-layer { position: absolute; top: 10px; left: 10px; color: white; font-size: 13px; pointer-events: none; background: rgba(15,15,25,0.85); padding: 12px; border-radius: 10px; width: calc(100% - 44px); border: 1px solid #333; z-index: 10; }
+        #btn-plant { position: absolute; bottom: 25px; right: 25px; width: 90px; height: 90px; background: radial-gradient(#ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.6); z-index: 10; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -19,29 +19,31 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #ffeb3b; text-shadow: 0 0 10px #ff9800;">ĐẶT NẤM & DIỆT QUÁI</h1>
+        <h1 style="color: #ffeb3b; text-shadow: 0 0 15px #f57f17; font-size: 28px;">BOMBERMAN NẤM TÌNH YÊU</h1>
+        <p style="color: #aaa;">Phiên bản đồ họa ô lưới phá tường chuyên nghiệp</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
 
     <div id="ui-layer" style="display: none;">
         <div id="info-level" style="font-weight: bold; color: #ffeb3b; font-size: 16px;">Cửa: 1 - Hiệp: 1</div>
-        <div id="info-reward" style="color: #00ffcc; margin-top: 2px;">Phần thưởng: Đang tải...</div>
-        <div id="info-status" style="color: #ff9999; margin-top: 2px; font-weight: bold;">MÁU: 100/100</div>
+        <div id="info-reward" style="color: #00ffcc; margin-top: 3px; font-weight: bold;">Phần thưởng: Đang tải...</div>
+        <div id="info-status" style="color: #ff8a80; margin-top: 3px; font-size: 14px; font-weight: bold;">MÁU: 100/100</div>
     </div>
     
     <button id="btn-plant" style="display: none;" onclick="handlePlant()">ĐẶT<br>NẤM</button>
 
     <script>
-        // === ⚠️ NHỚ THAY ĐƯỜNG LINK RENDER CỦA BẠN VÀO ĐÂY VÌ LINK DƯỚI CHỈ LÀ VÍ DỤ ===
+        // === ⚠️ ĐỪNG QUÊN THAY LINK RENDER CỦA RIÊNG BẠN VÀO ĐÂY NHÉ ===
         const socket = io("https://mushroom-server.onrender.com");
 
         let myGender = null;
         let sceneContext = null;
         let localPlayer = null;
         let remotePlayer = null;
-        let bricksGroup, monstersGroup, mushroomsGroup;
+        let bricksGroup, stoneGroup, monstersGroup, mushroomsGroup;
         let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
+        let TILE_SIZE = 40;
         let lastDamageTime = 0;
 
         function startGame(gender) {
@@ -49,7 +51,6 @@
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('btn-plant').style.display = 'block';
-            
             initPhaser();
             socket.emit('joinGame', gender);
         }
@@ -69,60 +70,55 @@
         function preload() {
             sceneContext = this;
 
-            // Tự vẽ texture Tường Gạch màu Cam Đỏ siêu chất
-            let canvasBrick = document.createElement('canvas'); canvasBrick.width = 40; canvasBrick.height = 40;
-            let ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#cc4422'; ctx.fillRect(0,0,40,40);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(0,0,40,40);
+            // Texture 1: Tường Đá Cứng Không Thể Phá Hủy (Màu xám đậm neon)
+            let canvasStone = document.createElement('canvas'); canvasStone.width = TILE_SIZE; canvasStone.height = TILE_SIZE;
+            let ctx = canvasStone.getContext('2d'); ctx.fillStyle = '#263238'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
+            ctx.strokeStyle = '#37474f'; ctx.lineWidth = 3; ctx.strokeRect(0,0,TILE_SIZE,TILE_SIZE);
+            this.textures.addCanvas('stone', canvasStone);
+
+            // Texture 2: Tường Gạch Phá Hủy Được (Màu đỏ gạch cổ điển)
+            let canvasBrick = document.createElement('canvas'); canvasBrick.width = TILE_SIZE; canvasBrick.height = TILE_SIZE;
+            ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#b71c1c'; ctx.fillRect(1,1,TILE_SIZE-2,TILE_SIZE-2);
+            ctx.fillStyle = '#ff5722'; ctx.fillRect(3,3,14,14); ctx.fillRect(21,3,16,14); ctx.fillRect(3,21,16,15); ctx.fillRect(23,21,14,15);
             this.textures.addCanvas('brick', canvasBrick);
 
-            // Tự vẽ Quái Vật màu Tím phát sáng độc hại
-            let canvasMonster = document.createElement('canvas'); canvasMonster.width = 30; canvasMonster.height = 30;
-            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#9c27b0'; ctx.beginPath(); ctx.arc(15,15,15,0,Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.fillRect(6,8,5,5); ctx.fillRect(19,8,5,5); // Mắt quái
+            // Các nhân vật, quái vật và nấm độc độc quyền
+            let canvasMonster = document.createElement('canvas'); canvasMonster.width = 28; canvasMonster.height = 28;
+            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#ff1744'; ctx.beginPath(); ctx.arc(14,14,14,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('monster', canvasMonster);
 
-            // Các texture người chơi và nấm từ bản trước
-            let canvasNam = document.createElement('canvas'); canvasNam.width = 32; canvasNam.height = 32;
-            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00c6ff'; ctx.beginPath(); ctx.arc(16,16,16,0,Math.PI*2); ctx.fill();
+            let canvasNam = document.createElement('canvas'); canvasNam.width = 26; canvasNam.height = 26;
+            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#29b6f6'; ctx.beginPath(); ctx.arc(13,13,13,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nam', canvasNam);
 
-            let canvasNu = document.createElement('canvas'); canvasNu.width = 32; canvasNu.height = 32;
-            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff5858'; ctx.beginPath(); ctx.arc(16,16,16,0,Math.PI*2); ctx.fill();
+            let canvasNu = document.createElement('canvas'); canvasNu.width = 26; canvasNu.height = 26;
+            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ec407a'; ctx.beginPath(); ctx.arc(13,13,13,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nu', canvasNu);
 
             let canvasShroom = document.createElement('canvas'); canvasShroom.width = 24; canvasShroom.height = 24;
-            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(12,10,12,0,Math.PI*2); ctx.fill();
+            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#ffca28'; ctx.beginPath(); ctx.arc(12,12,11,0,Math.PI*2); ctx.fill();
             this.textures.addCanvas('shroom', canvasShroom);
         }
 
         function create() {
+            stoneGroup = this.physics.add.staticGroup();
             bricksGroup = this.physics.add.staticGroup();
             monstersGroup = this.physics.add.group();
             mushroomsGroup = this.physics.add.group();
 
-            // Vẽ nền tối
-            this.cameras.main.setBackgroundColor('#14141f');
+            this.cameras.main.setBackgroundColor('#0d0d13');
 
-            // Cài đặt Joystick chạm màn hình bên trái để di chuyển
+            // Cài đặt Joystick cảm ứng đa điểm mượt mà
             this.input.on('pointerdown', (pointer) => {
-                if (pointer.x < window.innerWidth / 2) {
-                    joystick.active = true; joystick.startX = pointer.x; joystick.startY = pointer.y;
-                }
+                if (pointer.x < window.innerWidth / 2) { joystick.active = true; joystick.startX = pointer.x; joystick.startY = pointer.y; }
             });
             this.input.on('pointermove', (pointer) => {
                 if (joystick.active) { joystick.moveX = pointer.x - joystick.startX; joystick.moveY = pointer.y - joystick.startY; }
             });
             this.input.on('pointerup', () => { joystick.active = false; joystick.moveX = 0; joystick.moveY = 0; });
 
-            // SỰ KIỆN TỪ SERVER
-            socket.on('initLevel', (data) => {
-                document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-                document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
-                
-                // Vẽ tường gạch lên bản đồ từ dữ liệu server gửi về
-                bricksGroup.clear(true, true);
-                data.bricks.forEach(b => { bricksGroup.create(b.x, b.y, 'brick'); });
-            });
+            // ĐỒNG BỘ DỮ LIỆU TỪ GAME SERVER
+            socket.on('initGame', (data) => { drawMap(data.grid); updateUI(data); });
 
             socket.on('updatePlayers', (serverPlayers) => {
                 for (let id in serverPlayers) {
@@ -131,19 +127,14 @@
                         if (!localPlayer) {
                             localPlayer = sceneContext.physics.add.sprite(p.x, p.y, `p_${p.gender}`);
                             localPlayer.setCollideWorldBounds(true);
-                            // Bật tính năng va chạm CHẶN KHÔNG CHO ĐI XUYÊN TƯỜNG
+                            // Bật va chạm với cả Tường Đá và Tường Gạch để không đi xuyên được
+                            sceneContext.physics.add.collider(localPlayer, stoneGroup);
                             sceneContext.physics.add.collider(localPlayer, bricksGroup);
-                        } else {
-                            localPlayer.setPosition(p.x, p.y);
-                        }
-                        document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100 | Lực bom: ${p.power}`;
+                        } else { localPlayer.setPosition(p.x, p.y); }
+                        document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
                     } else {
-                        if (!remotePlayer) {
-                            remotePlayer = sceneContext.add.sprite(p.x, p.y, `p_${p.gender}`);
-                            remotePlayer.id = id;
-                        } else {
-                            remotePlayer.setPosition(p.x, p.y);
-                        }
+                        if (!remotePlayer) { remotePlayer = sceneContext.add.sprite(p.x, p.y, `p_${p.gender}`); remotePlayer.id = id; }
+                        else { remotePlayer.setPosition(p.x, p.y); }
                     }
                 }
             });
@@ -152,50 +143,73 @@
                 if (remotePlayer && remotePlayer.id === data.id) remotePlayer.setPosition(data.x, data.y);
             });
 
-            // Đồng bộ vị trí quái vật từ server liên tục
             socket.on('updateMonsters', (serverMonsters) => {
                 monstersGroup.clear(true, true);
-                serverMonsters.forEach(m => {
-                    let mon = monstersGroup.create(m.x, m.y, 'monster');
-                    mon.id = m.id;
-                });
+                serverMonsters.forEach(m => { monstersGroup.create(m.x, m.y, 'monster'); });
             });
 
             socket.on('mushroomPlaced', (shroom) => {
                 let m = sceneContext.physics.add.sprite(shroom.x, shroom.y, 'shroom');
-                m.id = shroom.id; m.owner = shroom.owner; m.power = shroom.power;
-                mushroomsGroup.add(m);
+                m.id = shroom.id; mushroomsGroup.add(m);
             });
 
-            socket.on('mushroomExploded', (shroom) => {
-                mushroomsGroup.getChildren().forEach(m => {
-                    if (m && m.id === shroom.id) {
-                        let circle = sceneContext.add.circle(m.x, m.y, 10, 0xff5500, 0.7);
-                        sceneContext.tweens.add({
-                            targets: circle, radius: 75, alpha: 0, duration: 250,
-                            onComplete: () => circle.destroy()
-                        });
+            socket.on('mushroomExploded', (data) => {
+                // Xóa quả nấm cũ đi
+                mushroomsGroup.getChildren().forEach(m => { if (m && m.id === data.shroom.id) m.destroy(); });
 
-                        // Nếu dính bom nấm của đối phương
-                        if (localPlayer && Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, m.x, m.y) < 75) {
-                            if (m.owner !== socket.id) socket.emit('takeDamage', { amount: m.power });
+                // Vẽ hiệu ứng vụ nổ lan tỏa hình chữ thập (Cross-Explosion) cực đẹp
+                data.explodedTiles.forEach(tile => {
+                    let posX = tile.x * TILE_SIZE + TILE_SIZE / 2;
+                    let posY = tile.y * TILE_SIZE + TILE_SIZE / 2;
+                    
+                    let fire = sceneContext.add.circle(posX, posY, TILE_SIZE / 2 - 2, 0xffeb3b, 0.8);
+                    sceneContext.tweens.add({
+                        targets: fire, alpha: 0, scale: 0.8, duration: 250, 
+                        onComplete: () => fire.destroy()
+                    });
+
+                    // Kiểm tra xem vị trí đứng của bản thân có nằm trong vùng nổ của tia lửa chữ thập không
+                    if (localPlayer) {
+                        let playerGridX = Math.floor(localPlayer.x / TILE_SIZE);
+                        let playerGridY = Math.floor(localPlayer.y / TILE_SIZE);
+                        if (playerGridX === tile.x && playerGridY === tile.y) {
+                            if (data.shroom.owner !== socket.id) { // Chỉ mất máu nếu dẫm bom của kẻ địch
+                                socket.emit('takeDamage', { amount: 25 });
+                            }
                         }
-                        m.destroy();
                     }
                 });
+
+                // Cập nhật lại kết cấu bản đồ gạch sau khi bị bom nổ phá hủy công bằng cho cả hai bên
+                drawMap(data.newGrid);
             });
 
-            socket.on('gameOver', (data) => { alert(`KẾT THÚC CỬA!\nNgười Thắng: ${data.winner.toUpperCase()}\nHành động: ${data.reward}`); });
+            socket.on('gameOver', (data) => { alert(`KẾT THÚC!\nNgười thắng: ${data.winner.toUpperCase()}\nHành động: ${data.reward}`); });
+            socket.on('resetMatch', (data) => { drawMap(data.grid); updateUI(data); });
+        }
 
-            socket.on('resetMatch', (data) => {
-                document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-                document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
-            });
+        function drawMap(grid) {
+            stoneGroup.clear(true, true);
+            bricksGroup.clear(true, true);
+
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    let posX = x * TILE_SIZE + TILE_SIZE / 2;
+                    let posY = y * TILE_SIZE + TILE_SIZE / 2;
+                    if (grid[y][x] === 1) stoneGroup.create(posX, posY, 'stone');
+                    else if (grid[y][x] === 2) bricksGroup.create(posX, posY, 'brick');
+                }
+            }
+        }
+
+        function updateUI(data) {
+            document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
+            document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
         }
 
         function update() {
             if (localPlayer && joystick.active) {
-                let speed = 180;
+                let speed = 150;
                 let angle = Math.atan2(joystick.moveY, joystick.moveX);
                 localPlayer.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
                 socket.emit('playerMove', { x: localPlayer.x, y: localPlayer.y });
@@ -203,15 +217,15 @@
                 localPlayer.body.setVelocity(0, 0);
             }
 
-            // Kiểm tra va chạm với Quái vật (Nếu đụng quái, cứ mỗi 0.5s trừ 10 máu)
+            // Quái vật cắn người chơi nếu đụng trúng
             if (localPlayer && monstersGroup.getChildren().length > 0) {
                 monstersGroup.getChildren().forEach(monster => {
-                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < 25) {
+                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < 22) {
                         let now = Date.now();
-                        if (now - lastDamageTime > 500) {
+                        if (now - lastDamageTime > 600) {
                             lastDamageTime = now;
-                            socket.emit('takeDamage', { amount: 10 });
-                            sceneContext.cameras.main.flash(100, 255, 0, 0); // Nháy đỏ màn hình khi bị cắn
+                            socket.emit('takeDamage', { amount: 15 });
+                            sceneContext.cameras.main.flash(100, 180, 0, 0);
                         }
                     }
                 });
