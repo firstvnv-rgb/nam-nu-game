@@ -3,28 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Tình Yêu V4.8</title>
+    <title>Bomberman Tình Yêu V5.0</title>
     <style>
         body { margin: 0; padding: 0; background: #111; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #111c24, #080d11); text-align: center; padding: 20px; box-sizing: border-box; }
         .btn { padding: 16px 40px; font-size: 18px; font-weight: bold; border: none; border-radius: 50px; margin: 12px; color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.4); width: 80%; max-width: 280px; letter-spacing: 1px; transition: 0.2s; }
         .btn-nam { background: linear-gradient(45deg, #00d2ff, #0066ff); }
         .btn-nu { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
-        
-        #ui-layer { position: absolute; top: 15px; left: 15px; right: 15px; color: white; background: rgba(10, 15, 20, 0.85); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        #info-level { font-weight: 800; color: #ffeb3b; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        #ui-layer { position: absolute; top: 15px; left: 15px; right: 15px; color: white; background: rgba(10, 15, 20, 0.85); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; backdrop-filter: blur(10px); }
+        #info-level { font-weight: 800; color: #ffeb3b; font-size: 18px; text-transform: uppercase; }
         #info-reward { color: #00ffcc; margin-top: 5px; font-size: 14px; font-weight: 600; }
         #info-status { color: #ff8a80; margin-top: 5px; font-size: 14px; font-weight: bold; }
-        
-        /* 🎮 BỘ ĐIỀU KHIỂN D-PAD HTML CHUẨN ĐA ĐIỂM */
         #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 999; pointer-events: none; }
-        
         .dpad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 4px; pointer-events: auto; }
-        .dpad-btn { background: #2c3e50; border: 2px solid #34495e; color: white; font-weight: bold; font-size: 22px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); -webkit-user-select: none; }
+        .dpad-btn { background: #2c3e50; border: 2px solid #34495e; color: white; font-weight: bold; font-size: 22px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .dpad-btn:active { background: #1a252f; transform: scale(0.92); }
-        
-        #btn-plant { pointer-events: auto; width: 90px; height: 90px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 16px; box-shadow: 0 8px 25px rgba(211,47,47,0.6); transition: 0.1s; }
-        #btn-plant:active { transform: scale(0.92); }
+        #btn-plant { pointer-events: auto; width: 90px; height: 90px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 16px; box-shadow: 0 8px 25px rgba(211,47,47,0.6); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -32,9 +26,9 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #ffeb3b; text-shadow: 0 4px 15px rgba(245,127,23,0.5); font-size: 32px; font-weight: 900; margin-bottom: 5px;">BOMBERMAN</h1>
-        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.8</h2>
-        <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Cập nhật Link Render Server & Sửa lỗi kẹt ô cỏ</p>
+        <h1 style="color: #ffeb3b; font-size: 32px; font-weight: 900;">BOMBERMAN</h1>
+        <h2 style="color: #ff4081; font-size: 20px;">Bản Siêu Cấp V5.0</h2>
+        <p style="color: #8a99a6; font-size: 14px;">Chống xuyên tường - Rơi vật phẩm tăng tốc & máu</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
@@ -47,31 +41,20 @@
     
     <div id="control-container" style="display: none;">
         <div class="dpad">
-            <div></div>
-            <div class="dpad-btn" id="key-up">▲</div>
-            <div></div>
-            <div class="dpad-btn" id="key-left">◀</div>
-            <div style="background: rgba(255,255,255,0.02); border-radius: 5px;"></div>
-            <div class="dpad-btn" id="key-right">▶</div>
-            <div></div>
-            <div class="dpad-btn" id="key-down">▼</div>
-            <div></div>
+            <div></div><div class="dpad-btn" id="key-up">▲</div><div></div>
+            <div class="dpad-btn" id="key-left">◀</div><div></div><div class="dpad-btn" id="key-right">▶</div>
+            <div></div><div class="dpad-btn" id="key-down">▼</div><div></div>
         </div>
         <button id="btn-plant" onclick="handlePlant()">ĐẶT<br>BOM</button>
     </div>
 
     <script>
-        // 🌐 LINK SERVER RENDER MỚI ĐÃ ĐƯỢC CẬP NHẬT TẠI ĐÂY
         const socket = io("https://mushroom-server.onrender.com");
 
-        let myGender = null;
-        let sceneContext = null;
-        let localPlayer = null;
-        let remotePlayer = null;
-        let gridContainer, bricksGroup, stoneGroup, monstersGroup, mushroomsGroup;
-        let TILE_SIZE = 0; 
-        let MAP_OFFSET_Y = 110; 
-        let lastDamageTime = 0;
+        let myGender = null; let sceneContext = null; let localPlayer = null; let remotePlayer = null;
+        let gridContainer, bricksGroup, stoneGroup, monstersGroup, mushroomsGroup, itemsGroup;
+        let TILE_SIZE = 0; let MAP_OFFSET_Y = 110; let lastDamageTime = 0;
+        let baseSpeed = 130; let bonusSpeed = 0;
 
         let moveState = { up: false, down: false, left: false, right: false };
 
@@ -80,9 +63,7 @@
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('control-container').style.display = 'flex';
-            initPhaser();
-            setupHtmlDpad();
-            socket.emit('joinGame', gender);
+            initPhaser(); setupHtmlDpad(); socket.emit('joinGame', gender);
         }
 
         function setupHtmlDpad() {
@@ -90,24 +71,15 @@
                 const el = document.getElementById(id);
                 el.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[prop] = true; });
                 el.addEventListener('touchend', (e) => { e.preventDefault(); moveState[prop] = false; });
-                el.addEventListener('touchcancel', (e) => { e.preventDefault(); moveState[prop] = false; });
-                
-                el.addEventListener('mousedown', () => { moveState[prop] = true; });
-                el.addEventListener('mouseup', () => { moveState[prop] = false; });
-                el.addEventListener('mouseleave', () => { moveState[prop] = false; });
+                bindDirection('mousedown', () => { moveState[prop] = true; });
+                bindDirection('mouseup', () => { moveState[prop] = false; });
             };
-            bindDirection('key-up', 'up');
-            bindDirection('key-down', 'down');
-            bindDirection('key-left', 'left');
-            bindDirection('key-right', 'right');
+            bindDirection('key-up', 'up'); bindDirection('key-down', 'down'); bindDirection('key-left', 'left'); bindDirection('key-right', 'right');
         }
 
         function initPhaser() {
             const config = {
-                type: Phaser.AUTO,
-                width: window.innerWidth,
-                height: window.innerHeight,
-                parent: document.body,
+                type: Phaser.AUTO, width: window.innerWidth, height: window.innerHeight, parent: document.body,
                 physics: { default: 'arcade', arcade: { debug: false } },
                 scene: { preload: preload, create: create, update: update }
             };
@@ -115,51 +87,51 @@
         }
 
         function preload() {
-            sceneContext = this;
-            TILE_SIZE = Math.floor(window.innerWidth / 15);
+            sceneContext = this; TILE_SIZE = Math.floor(window.innerWidth / 15);
 
+            // Tạo texture nhân vật & map bằng canvas vẽ hình học cơ bản
             let canvasBG = document.createElement('canvas'); canvasBG.width = TILE_SIZE; canvasBG.height = TILE_SIZE;
-            let ctx = canvasBG.getContext('2d'); ctx.fillStyle = '#388e3c'; ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-            ctx.fillStyle = '#4caf50'; ctx.fillRect(1, 1, TILE_SIZE-2, TILE_SIZE-2);
+            let ctx = canvasBG.getContext('2d'); ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
             this.textures.addCanvas('bg_grass', canvasBG);
 
             let canvasStone = document.createElement('canvas'); canvasStone.width = TILE_SIZE; canvasStone.height = TILE_SIZE;
             ctx = canvasStone.getContext('2d'); ctx.fillStyle = '#1c2833'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
-            ctx.strokeStyle = '#2e4053'; ctx.lineWidth = 3; ctx.strokeRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
             this.textures.addCanvas('stone', canvasStone);
 
             let canvasBrick = document.createElement('canvas'); canvasBrick.width = TILE_SIZE; canvasBrick.height = TILE_SIZE;
-            ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#d35400'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
-            ctx.fillStyle = '#e67e22'; ctx.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
-            ctx.fillStyle = '#ba4a00'; ctx.fillRect(4, TILE_SIZE/2+1, TILE_SIZE-8, TILE_SIZE/2-4);
+            ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#e67e22'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
             this.textures.addCanvas('brick', canvasBrick);
 
             let canvasMonster = document.createElement('canvas'); canvasMonster.width = TILE_SIZE; canvasMonster.height = TILE_SIZE;
-            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#a832a4'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.fillRect(TILE_SIZE*0.3, TILE_SIZE*0.3, 4, 4); ctx.fillRect(TILE_SIZE*0.6, TILE_SIZE*0.3, 4, 4);
+            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#a832a4'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
             this.textures.addCanvas('monster', canvasMonster);
 
             let canvasNam = document.createElement('canvas'); canvasNam.width = TILE_SIZE; canvasNam.height = TILE_SIZE;
-            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nam', canvasNam);
 
             let canvasNu = document.createElement('canvas'); canvasNu.width = TILE_SIZE; canvasNu.height = TILE_SIZE;
-            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
             this.textures.addCanvas('p_nu', canvasNu);
 
             let canvasShroom = document.createElement('canvas'); canvasShroom.width = TILE_SIZE; canvasShroom.height = TILE_SIZE;
-            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.35, 0, Math.PI*2); ctx.fill();
+            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.35, 0, Math.PI*2); ctx.fill();
             this.textures.addCanvas('shroom', canvasShroom);
+
+            // VẬT PHẨM: Giày tăng tốc (Màu xanh dương) và Bình máu (Màu đỏ tươi)
+            let canvasSpeed = document.createElement('canvas'); canvasSpeed.width = TILE_SIZE; canvasSpeed.height = TILE_SIZE;
+            ctx = canvasSpeed.getContext('2d'); ctx.fillStyle = '#2ecc71'; ctx.fillRect(TILE_SIZE*0.2, TILE_SIZE*0.2, TILE_SIZE*0.6, TILE_SIZE*0.6);
+            this.textures.addCanvas('item_speed', canvasSpeed);
+
+            let canvasHeal = document.createElement('canvas'); canvasHeal.width = TILE_SIZE; canvasHeal.height = TILE_SIZE;
+            ctx = canvasHeal.getContext('2d'); ctx.fillStyle = '#e74c3c'; ctx.fillRect(TILE_SIZE*0.2, TILE_SIZE*0.2, TILE_SIZE*0.6, TILE_SIZE*0.6);
+            this.textures.addCanvas('item_heal', canvasHeal);
         }
 
         function create() {
             gridContainer = this.add.container(0, 0); 
-            stoneGroup = this.physics.add.staticGroup();
-            bricksGroup = this.physics.add.staticGroup();
-            mushroomsGroup = this.physics.add.group();
-            monstersGroup = this.physics.add.group();
+            stoneGroup = this.physics.add.staticGroup(); bricksGroup = this.physics.add.staticGroup();
+            mushroomsGroup = this.physics.add.group(); monstersGroup = this.physics.add.group(); itemsGroup = this.add.group();
 
             this.cameras.main.setBackgroundColor('#111');
 
@@ -175,89 +147,73 @@
                         if (!localPlayer) {
                             localPlayer = sceneContext.physics.add.sprite(screenX, screenY, `p_${p.gender}`);
                             localPlayer.setCollideWorldBounds(true);
-                            
-                            // Tối ưu hitbox va chạm nhỏ lại để di chuyển mượt mà giữa các hàng ô cỏ
-                            localPlayer.setBodySize(TILE_SIZE * 0.6, TILE_SIZE * 0.6);
-                            
+                            localPlayer.setBodySize(TILE_SIZE * 0.55, TILE_SIZE * 0.55);
                             sceneContext.physics.add.collider(localPlayer, stoneGroup);
                             sceneContext.physics.add.collider(localPlayer, bricksGroup);
                         } else { localPlayer.setPosition(screenX, screenY); }
-                        localPlayer.setDepth(100);
                         document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
                     } else {
                         if (!remotePlayer) { remotePlayer = sceneContext.add.sprite(screenX, screenY, `p_${p.gender}`); remotePlayer.id = id; }
                         else { remotePlayer.setPosition(screenX, screenY); }
-                        remotePlayer.setDepth(99);
                     }
                 }
             });
 
             socket.on('playerMoved', (data) => {
                 if (remotePlayer && remotePlayer.id === data.id) {
-                    let sX = (data.x / 40) * TILE_SIZE;
-                    let sY = (data.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
-                    remotePlayer.setPosition(sX, sY);
+                    remotePlayer.setPosition((data.x / 40) * TILE_SIZE, (data.y / 40) * TILE_SIZE + MAP_OFFSET_Y);
                 }
             });
+
+            socket.on('playerBuff', (data) => { if(data.type === 'speed') bonusSpeed = data.amount; });
+            socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(150, 255, 0, 0); });
 
             socket.on('updateMonsters', (serverMonsters) => {
                 monstersGroup.clear(true, true);
                 serverMonsters.forEach(m => {
-                    let sX = (m.x / 40) * TILE_SIZE;
-                    let sY = (m.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
-                    let mon = monstersGroup.create(sX, sY, 'monster');
+                    let mon = monstersGroup.create((m.x / 40) * TILE_SIZE, (m.y / 40) * TILE_SIZE + MAP_OFFSET_Y, 'monster');
                     mon.setDepth(50);
                 });
             });
 
+            // VẼ VẬT PHẨM RƠI TRÊN SÂN
+            socket.on('updateItems', (serverItems) => {
+                itemsGroup.clear(true, true);
+                for (let key in serverItems) {
+                    let it = serverItems[key];
+                    let itemSprite = sceneContext.add.sprite(it.x * TILE_SIZE + TILE_SIZE/2, it.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y, `item_${it.type}`);
+                    itemsGroup.add(itemSprite);
+                }
+            });
+
             socket.on('mushroomPlaced', (shroom) => {
-                let sX = (shroom.x / 40) * TILE_SIZE;
-                let sY = (shroom.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
-                let m = sceneContext.physics.add.sprite(sX, sY, 'shroom');
-                m.id = shroom.id; m.setDepth(10); mushroomsGroup.add(m);
+                let m = sceneContext.physics.add.sprite((shroom.x / 40) * TILE_SIZE, (shroom.y / 40) * TILE_SIZE + MAP_OFFSET_Y, 'shroom');
+                m.id = shroom.id; mushroomsGroup.add(m);
             });
 
             socket.on('mushroomExploded', (data) => {
                 mushroomsGroup.getChildren().forEach(m => { if (m && m.id === data.shroom.id) m.destroy(); });
-
                 data.explodedTiles.forEach(tile => {
-                    let sX = tile.x * TILE_SIZE + TILE_SIZE / 2;
-                    let sY = tile.y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
-                    
-                    let fire = sceneContext.add.circle(sX, sY, TILE_SIZE / 2 - 2, 0xff5722, 0.85);
-                    fire.setDepth(20);
+                    let fire = sceneContext.add.circle(tile.x * TILE_SIZE + TILE_SIZE/2, tile.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y, TILE_SIZE/2 - 2, 0xff5722, 0.85);
                     sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.7, duration: 250, onComplete: () => fire.destroy() });
-
-                    if (localPlayer) {
-                        let playerGridX = Math.floor(localPlayer.x / TILE_SIZE);
-                        let playerGridY = Math.floor((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE);
-                        if (playerGridX === tile.x && playerGridY === tile.y) {
-                            if (data.shroom.owner !== socket.id) socket.emit('takeDamage', { amount: 25 });
-                        }
-                    }
                 });
-
                 drawMap(data.newGrid);
             });
 
-            socket.on('gameOver', (data) => { alert(`KẾT THÚC!\nNgười thắng: ${data.winner.toUpperCase()}\nHành động: ${data.reward}`); });
-            socket.on('resetMatch', (data) => { drawMap(data.grid); updateUI(data); });
+            socket.on('gameOver', (data) => { alert(`KẾT THÚC!\nNgười thắng: ${data.winner.toUpperCase()}\nNhận được: ${data.reward}`); });
+            socket.on('resetMatch', (data) => { bonusSpeed = 0; drawMap(data.grid); updateUI(data); });
         }
 
         function drawMap(grid) {
-            stoneGroup.clear(true, true);
-            bricksGroup.clear(true, true);
-            gridContainer.removeAll(true);
-
-            let grassGrid = sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.3);
+            stoneGroup.clear(true, true); bricksGroup.clear(true, true); gridContainer.removeAll(true);
+            let grassGrid = sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.2);
             gridContainer.add(grassGrid);
 
             for (let y = 0; y < grid.length; y++) {
                 for (let x = 0; x < grid[y].length; x++) {
-                    let posX = x * TILE_SIZE + TILE_SIZE / 2;
-                    let posY = y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
-                    if (grid[y][x] === 1) { stoneGroup.create(posX, posY, 'stone').setDepth(30); }
-                    else if (grid[y][x] === 2) { bricksGroup.create(posX, posY, 'brick').setDepth(31); }
+                    let posX = x * TILE_SIZE + TILE_SIZE / 2; let posY = y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
+                    if (grid[y][x] === 1) stoneGroup.create(posX, posY, 'stone').setDepth(30);
+                    else if (grid[y][x] === 2) bricksGroup.create(posX, posY, 'brick').setDepth(31);
                 }
             }
         }
@@ -269,33 +225,26 @@
 
         function update() {
             if (!localPlayer) return;
+            let currentSpeed = baseSpeed + bonusSpeed;
+            let vx = 0; let vy = 0;
 
-            let speed = 140;
-            let vx = 0;
-            let vy = 0;
-
-            if (moveState.left) vx = -speed;
-            else if (moveState.right) vx = speed;
-
-            if (moveState.up) vy = -speed;
-            else if (moveState.down) vy = speed;
+            if (moveState.left) vx = -currentSpeed; else if (moveState.right) vx = currentSpeed;
+            if (moveState.up) vy = -currentSpeed; else if (moveState.down) vy = currentSpeed;
 
             localPlayer.body.setVelocity(vx, vy);
 
             if (vx !== 0 || vy !== 0) {
-                let logicX = (localPlayer.x / TILE_SIZE) * 40;
-                let logicY = ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40;
-                socket.emit('playerMove', { x: logicX, y: logicY });
+                socket.emit('playerMove', { x: (localPlayer.x / TILE_SIZE) * 40, y: ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40 });
             }
 
             if (monstersGroup.getChildren().length > 0) {
                 monstersGroup.getChildren().forEach(monster => {
-                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < TILE_SIZE * 0.6) {
+                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < TILE_SIZE * 0.5) {
                         let now = Date.now();
-                        if (now - lastDamageTime > 600) {
+                        if (now - lastDamageTime > 1000) {
                             lastDamageTime = now;
-                            socket.emit('takeDamage', { amount: 15 });
-                            sceneContext.cameras.main.flash(100, 180, 0, 0);
+                            socket.emit('takeDamage', { amount: 20 });
+                            sceneContext.cameras.main.flash(100, 255, 0, 0);
                         }
                     }
                 });
@@ -304,9 +253,9 @@
 
         function handlePlant() {
             if (localPlayer) {
-                let logicX = (localPlayer.x / TILE_SIZE) * 40;
-                let logicY = ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40;
-                socket.emit('placeMushroom', { x: logicX, y: logicY });
+                let currentGridX = Math.floor(localPlayer.x / TILE_SIZE);
+                let currentGridY = Math.floor((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE);
+                socket.emit('placeMushroom', { x: currentGridX * 40 + 20, y: currentGridY * 40 + 20 });
             }
         }
     </script>
