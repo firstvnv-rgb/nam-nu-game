@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Cute v7.4</title>
+    <title>Bomberman Cute v7.5 - Thêm Quái Vật</title>
     <style>
         body { margin: 0; padding: 0; background: #0f172a; font-family: system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); text-align: center; }
@@ -26,7 +26,7 @@
 
     <div id="lobby">
         <h1 style="color: #fbbf24; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">BOMBERMAN CUTE</h1>
-        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Đã thay đổi nhân vật thành đồ họa ngộ nghĩnh sống động</p>
+        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Đã sửa lỗi hiển thị quái vật một mắt tím tinh nghịch</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ CUTE</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA CUTE</button>
     </div>
@@ -76,18 +76,18 @@
             new Phaser.Game(config);
         }
 
-        // TẠO HÌNH ẢNH NGỘ NGHĨNH BẰNG CANVAS HIGH-RES
         function preload() {
             sceneContext = this;
+            let center = TILE_SIZE / 2;
             
-            // 1. Tạo ô cỏ nền tối mắt lưới
+            // 1. Ô cỏ nền tối mắt lưới
             let cvGrass = document.createElement('canvas'); cvGrass.width = TILE_SIZE; cvGrass.height = TILE_SIZE;
             let ctxGrass = cvGrass.getContext('2d');
             ctxGrass.fillStyle = '#1e251c'; ctxGrass.fillRect(0,0,TILE_SIZE,TILE_SIZE);
             ctxGrass.strokeStyle = '#273024'; ctxGrass.lineWidth = 1; ctxGrass.strokeRect(0,0,TILE_SIZE,TILE_SIZE);
             this.textures.addCanvas('bg_grass', cvGrass);
 
-            // 2. Tạo khối đá xám có vân nứt góc cạnh
+            // 2. Khối đá
             let cvStone = document.createElement('canvas'); cvStone.width = TILE_SIZE; cvStone.height = TILE_SIZE;
             let ctxStone = cvStone.getContext('2d');
             ctxStone.fillStyle = '#475569'; ctxStone.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
@@ -95,55 +95,52 @@
             ctxStone.fillStyle = '#334155'; ctxStone.fillRect(4,TILE_SIZE-14,TILE_SIZE-8,10);
             this.textures.addCanvas('stone', cvStone);
 
-            // 3. Tạo khối gạch cam có đường chỉ vữa xếp tầng
+            // 3. Khối gạch
             let cvBrick = document.createElement('canvas'); cvBrick.width = TILE_SIZE; cvBrick.height = TILE_SIZE;
             let ctxBrick = cvBrick.getContext('2d');
             ctxBrick.fillStyle = '#b45309'; ctxBrick.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
-            ctxBrick.strokeStyle = '#78350f'; ctxBrick.lineWidth = 2;
-            ctxBrick.strokeRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
+            ctxBrick.strokeStyle = '#78350f'; ctxBrick.lineWidth = 2; ctxBrick.strokeRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
             ctxBrick.beginPath(); ctxBrick.moveTo(2, TILE_SIZE/2); ctxBrick.lineTo(TILE_SIZE-2, TILE_SIZE/2); ctxBrick.stroke();
             this.textures.addCanvas('brick', cvBrick);
 
-            // 4. Nhân vật Nam: Chàng trai tóc xanh da trời, đeo kính bảo hộ trắng mắt đen cute
+            // 4. Nhân vật Nam
             let cvNam = document.createElement('canvas'); cvNam.width = TILE_SIZE; cvNam.height = TILE_SIZE;
             let ctxNam = cvNam.getContext('2d');
-            let center = TILE_SIZE / 2;
-            ctxNam.fillStyle = '#0ea5e9'; ctxNam.beginPath(); ctxNam.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNam.fill(); // Đầu & Tóc
-            ctxNam.fillStyle = '#ffedd5'; ctxNam.beginPath(); ctxNam.arc(center, center+2, TILE_SIZE*0.3, 0, Math.PI*2); ctxNam.fill(); // Mặt
-            ctxNam.fillStyle = '#ffffff'; ctxNam.fillRect(center-10, center-6, 8, 8); ctxNam.fillRect(center+2, center-6, 8, 8); // Kính
-            ctxNam.fillStyle = '#000000'; ctxNam.fillRect(center-7, center-4, 3, 4); ctxNam.fillRect(center+5, center-4, 3, 4); // Mắt cute
-            ctxNam.strokeStyle = '#e11d48'; ctxNam.lineWidth = 2; ctxNam.beginPath(); ctxNam.arc(center, center+4, 4, 0, Math.PI); ctxNam.stroke(); // Miệng cười
+            ctxNam.fillStyle = '#0ea5e9'; ctxNam.beginPath(); ctxNam.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNam.fill();
+            ctxNam.fillStyle = '#ffedd5'; ctxNam.beginPath(); ctxNam.arc(center, center+2, TILE_SIZE*0.3, 0, Math.PI*2); ctxNam.fill();
+            ctxNam.fillStyle = '#ffffff'; ctxNam.fillRect(center-10, center-6, 8, 8); ctxNam.fillRect(center+2, center-6, 8, 8);
+            ctxNam.fillStyle = '#000000'; ctxNam.fillRect(center-7, center-4, 3, 4); ctxNam.fillRect(center+5, center-4, 3, 4);
+            ctxNam.strokeStyle = '#e11d48'; ctxNam.lineWidth = 2; ctxNam.beginPath(); ctxNam.arc(center, center+4, 4, 0, Math.PI); ctxNam.stroke();
             this.textures.addCanvas('p_nam', cvNam);
 
-            // 5. Nhân vật Nữ: Công chúa nơ hồng, má hồng cam chúm chím dễ thương
+            // 5. Nhân vật Nữ
             let cvNu = document.createElement('canvas'); cvNu.width = TILE_SIZE; cvNu.height = TILE_SIZE;
             let ctxNu = cvNu.getContext('2d');
-            ctxNu.fillStyle = '#ec4899'; ctxNu.beginPath(); ctxNu.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNu.fill(); // Đầu hồng
-            ctxNu.fillStyle = '#fff1f2'; ctxNu.beginPath(); ctxNu.arc(center, center+2, TILE_SIZE*0.32, 0, Math.PI*2); ctxNu.fill(); // Mặt sáng
-            ctxNu.fillStyle = '#f43f5e'; ctxNu.fillRect(center-12, center-14, 10, 8); ctxNu.fillRect(center+2, center-14, 10, 8); // Cái nơ trên đầu
-            ctxNu.fillStyle = '#0f172a'; ctxNu.beginPath(); ctxNu.arc(center-6, center-2, 3, 0, Math.PI*2); ctxNu.arc(center+6, center-2, 3, 0, Math.PI*2); ctxNu.fill(); // Mắt hột nhãn
-            ctxNu.fillStyle = '#fda4af'; ctxNu.beginPath(); ctxNu.arc(center-9, center+4, 3, 0, Math.PI*2); ctxNu.arc(center+9, center+4, 3, 0, Math.PI*2); ctxNu.fill(); // Má hồng
+            ctxNu.fillStyle = '#ec4899'; ctxNu.beginPath(); ctxNu.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNu.fill();
+            ctxNu.fillStyle = '#fff1f2'; ctxNu.beginPath(); ctxNu.arc(center, center+2, TILE_SIZE*0.32, 0, Math.PI*2); ctxNu.fill();
+            ctxNu.fillStyle = '#f43f5e'; ctxNu.fillRect(center-12, center-14, 10, 8); ctxNu.fillRect(center+2, center-14, 10, 8);
+            ctxNu.fillStyle = '#0f172a'; ctxNu.beginPath(); ctxNu.arc(center-6, center-2, 3, 0, Math.PI*2); ctxNu.arc(center+6, center-2, 3, 0, Math.PI*2); ctxNu.fill();
+            ctxNu.fillStyle = '#fda4af'; ctxNu.beginPath(); ctxNu.arc(center-9, center+4, 3, 0, Math.PI*2); ctxNu.arc(center+9, center+4, 3, 0, Math.PI*2); ctxNu.fill();
             this.textures.addCanvas('p_nu', cvNu);
 
-            // 6. Quái vật: Alien một mắt tím xịu, có cặp sừng nhỏ ngộ nghĩnh
+            // 6. Đồ họa Quái vật Alien tím cực chuẩn nét
             let cvMon = document.createElement('canvas'); cvMon.width = TILE_SIZE; cvMon.height = TILE_SIZE;
             let ctxMon = cvMon.getContext('2d');
-            ctxMon.fillStyle = '#a855f7'; ctxMon.beginPath(); ctxMon.arc(center, center+4, TILE_SIZE*0.38, 0, Math.PI*2); ctxMon.fill(); // Thân quái
-            ctxMon.fillRect(center-12, center-14, 4, 10); ctxMon.fillRect(center+8, center-14, 4, 10); // 2 Sừng
-            ctxMon.fillStyle = '#ffffff'; ctxMon.beginPath(); ctxMon.arc(center, center, 10, 0, Math.PI*2); ctxMon.fill(); // Mắt to giữa mặt
-            ctxMon.fillStyle = '#dc2626'; ctxMon.beginPath(); ctxMon.arc(center, center, 4, 0, Math.PI*2); ctxMon.fill(); // Lòng đen màu đỏ tinh nghịch
+            ctxMon.fillStyle = '#a855f7'; ctxMon.beginPath(); ctxMon.arc(center, center+4, TILE_SIZE*0.38, 0, Math.PI*2); ctxMon.fill();
+            ctxMon.fillRect(center-10, center-14, 4, 10); ctxMon.fillRect(center+6, center-14, 4, 10);
+            ctxMon.fillStyle = '#ffffff'; ctxMon.beginPath(); ctxMon.arc(center, center, 9, 0, Math.PI*2); ctxMon.fill();
+            ctxMon.fillStyle = '#dc2626'; ctxMon.beginPath(); ctxMon.arc(center, center, 4, 0, Math.PI*2); ctxMon.fill();
             this.textures.addCanvas('monster', cvMon);
 
-            // 7. Quả bom nấm: Nấm độc màu cam đốm trắng, có dây ngòi nổ đốt cháy phía trên
+            // 7. Quả bom nấm
             let cvShroom = document.createElement('canvas'); cvShroom.width = TILE_SIZE; cvShroom.height = TILE_SIZE;
             let ctxShroom = cvShroom.getContext('2d');
-            ctxShroom.fillStyle = '#f59e0b'; ctxShroom.beginPath(); ctxShroom.arc(center, center+4, TILE_SIZE*0.4, 0, Math.PI*2); ctxShroom.fill(); // Mũ nấm
-            ctxShroom.fillStyle = '#ffffff'; 
-            ctxShroom.beginPath(); ctxShroom.arc(center-6, center-2, 4, 0, Math.PI*2); ctxShroom.arc(center+8, center+4, 3, 0, Math.PI*2); ctxShroom.arc(center, center+10, 4, 0, Math.PI*2); ctxShroom.fill(); // Các đốm trắng nấm
-            ctxShroom.strokeStyle = '#ef4444'; ctxShroom.lineWidth = 3; ctxShroom.beginPath(); ctxShroom.moveTo(center, center-12); ctxShroom.quadraticCurveTo(center+8, center-18, center+4, center-22); ctxShroom.stroke(); // Ngòi nổ
+            ctxShroom.fillStyle = '#f59e0b'; ctxShroom.beginPath(); ctxShroom.arc(center, center+4, TILE_SIZE*0.4, 0, Math.PI*2); ctxShroom.fill();
+            ctxShroom.fillStyle = '#ffffff'; ctxShroom.beginPath(); ctxShroom.arc(center-6, center-2, 4, 0, Math.PI*2); ctxShroom.arc(center+8, center+4, 3, 0, Math.PI*2); ctxShroom.fill();
+            ctxShroom.strokeStyle = '#ef4444'; ctxShroom.lineWidth = 3; ctxShroom.beginPath(); ctxShroom.moveTo(center, center-12); ctxShroom.quadraticCurveTo(center+8, center-18, center+4, center-22); ctxShroom.stroke();
             this.textures.addCanvas('shroom', cvShroom);
 
-            // 8. Các túi Item nâng cấp sức mạnh tròn trịa sắc nét
+            // 8. Items
             let cvSpeed = document.createElement('canvas'); cvSpeed.width = TILE_SIZE; cvSpeed.height = TILE_SIZE;
             let ctxSpeed = cvSpeed.getContext('2d');
             ctxSpeed.fillStyle = '#10b981'; ctxSpeed.beginPath(); ctxSpeed.arc(center, center, TILE_SIZE*0.35, 0, Math.PI*2); ctxSpeed.fill();
@@ -194,6 +191,7 @@
 
             socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(120, 239, 68, 68); });
 
+            // ĐỒNG BỘ QUÁI VẬT TỪ SERVER LÊN LAYER TRÊN CÙNG
             socket.on('updateMonsters', (serverMonsters) => {
                 let activeIds = serverMonsters.map(m => m.id);
                 serverMonsters.forEach(m => {
@@ -203,6 +201,7 @@
                     if (!mSprites[m.id]) {
                         mSprites[m.id] = sceneContext.add.sprite(targetX, targetY, 'monster').setDepth(9);
                     } else {
+                        mSprites[m.id].setDepth(9); // Ép quái nổi lên trên cỏ
                         sceneContext.tweens.add({ targets: mSprites[m.id], x: targetX, y: targetY, duration: 400 });
                     }
                 });
@@ -275,6 +274,7 @@
             document.getElementById('info-reward').innerText = `Phần thưởng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
         }
 
+        // CẢI TIẾN TỐC ĐỘ BƯỚC ĐI CHO MƯỢT MÀ HƠN
         function setupInputHandlers() {
             const sendMoveRequest = () => {
                 if (!activeDirection) return;
@@ -288,7 +288,7 @@
                     activeDirection = { x: dx, y: dy };
                     sendMoveRequest();
                     if(inputTimer) clearInterval(inputTimer);
-                    inputTimer = setInterval(sendMoveRequest, 160);
+                    inputTimer = setInterval(sendMoveRequest, 150); 
                 });
 
                 let stop = (e) => {
@@ -305,9 +305,7 @@
             bind('key-left', -1, 0); bind('key-right', 1, 0);
         }
 
-        function handlePlant() {
-            socket.emit('requestPlant');
-        }
+        function handlePlant() { socket.emit('requestPlant'); }
     </script>
 </body>
 </html>
