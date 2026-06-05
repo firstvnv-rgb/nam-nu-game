@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Tình Yêu Toàn Diện V4.4</title>
+    <title>Bomberman Tình Yêu V4.6</title>
     <style>
         body { margin: 0; padding: 0; background: #111; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #111c24, #080d11); text-align: center; padding: 20px; box-sizing: border-box; }
@@ -16,14 +16,14 @@
         #info-reward { color: #00ffcc; margin-top: 5px; font-size: 14px; font-weight: 600; }
         #info-status { color: #ff8a80; margin-top: 5px; font-size: 14px; font-weight: bold; }
         
-        /* 🎮 THIẾT KẾ BỘ ĐIỀU KHIỂN D-PAD VÀ NÚT ĐẶT BOM */
-        #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 10; pointer-events: none; }
+        /* 🎮 BỘ ĐIỀU KHIỂN HTML/CSS FIX LỖI ĐƠ CẢM ỨNG */
+        #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 999; pointer-events: none; }
         
-        .dpad { display: grid; grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px); gap: 3px; pointer-events: auto; }
-        .dpad-btn { background: #2c3e50; border: 2px solid #34495e; color: white; font-weight: bold; font-size: 18px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .dpad-btn:active { background: #1a252f; transform: scale(0.95); }
+        .dpad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 4px; pointer-events: auto; }
+        .dpad-btn { background: #2c3e50; border: 2px solid #34495e; color: white; font-weight: bold; font-size: 22px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); -webkit-user-select: none; }
+        .dpad-btn:active { background: #1a252f; transform: scale(0.92); }
         
-        #btn-plant { pointer-events: auto; width: 85px; height: 85px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 15px; box-shadow: 0 8px 20px rgba(211,47,47,0.5); transform: scale(1); transition: 0.1s; }
+        #btn-plant { pointer-events: auto; width: 90px; height: 90px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 16px; box-shadow: 0 8px 25px rgba(211,47,47,0.6); transition: 0.1s; }
         #btn-plant:active { transform: scale(0.92); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -33,8 +33,8 @@
 
     <div id="lobby">
         <h1 style="color: #ffeb3b; text-shadow: 0 4px 15px rgba(245,127,23,0.5); font-size: 32px; font-weight: 900; margin-bottom: 5px;">BOMBERMAN</h1>
-        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.4</h2>
-        <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Cập nhật D-Pad di chuyển & Diệt quái vật bất tử</p>
+        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.6</h2>
+        <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Sửa triệt để lỗi kẹt phím di chuyển lên</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
@@ -51,7 +51,7 @@
             <div class="dpad-btn" id="key-up">▲</div>
             <div></div>
             <div class="dpad-btn" id="key-left">◀</div>
-            <div style="background: rgba(255,255,255,0.05); border-radius: 5px;"></div>
+            <div style="background: rgba(255,255,255,0.02); border-radius: 5px;"></div>
             <div class="dpad-btn" id="key-right">▶</div>
             <div></div>
             <div class="dpad-btn" id="key-down">▼</div>
@@ -72,8 +72,8 @@
         let MAP_OFFSET_Y = 110; 
         let lastDamageTime = 0;
 
-        // Trạng thái các phím điều hướng D-pad
-        let currentDir = { up: false, down: false, left: false, right: false };
+        // Trạng thái nút hướng
+        let moveState = { up: false, down: false, left: false, right: false };
 
         function startGame(gender) {
             myGender = gender;
@@ -81,24 +81,30 @@
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('control-container').style.display = 'flex';
             initPhaser();
-            setupDpadEvents();
+            setupHtmlDpad();
             socket.emit('joinGame', gender);
         }
 
-        // Lắng nghe sự kiện chạm nhấn giữ nút D-Pad mượt mà
-        function setupDpadEvents() {
-            const bindKey = (id, dirProp) => {
-                const btn = document.getElementById(id);
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); currentDir[dirProp] = true; });
-                btn.addEventListener('touchend', (e) => { e.preventDefault(); currentDir[dirProp] = false; });
-                btn.addEventListener('mousedown', () => { currentDir[dirProp] = true; });
-                btn.addEventListener('mouseup', () => { currentDir[dirProp] = false; });
-                btn.addEventListener('mouseleave', () => { currentDir[dirProp] = false; });
+        // Cấu hình bắt sự kiện chạm đa điểm trên HTML chuẩn di động
+        function setupHtmlDpad() {
+            const bindDirection = (id, prop) => {
+                const el = document.getElementById(id);
+                
+                // Hỗ trợ Mobile cảm ứng
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[prop] = true; });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); moveState[prop] = false; });
+                el.addEventListener('touchcancel', (e) => { e.preventDefault(); moveState[prop] = false; });
+                
+                // Hỗ trợ máy tính click chuột
+                el.addEventListener('mousedown', () => { moveState[prop] = true; });
+                el.addEventListener('mouseup', () => { moveState[prop] = false; });
+                el.addEventListener('mouseleave', () => { moveState[prop] = false; });
             };
-            bindKey('key-up', 'up');
-            bindKey('key-down', 'down');
-            bindKey('key-left', 'left');
-            bindKey('key-right', 'right');
+
+            bindDirection('key-up', 'up');
+            bindDirection('key-down', 'down');
+            bindDirection('key-left', 'left');
+            bindDirection('key-right', 'right');
         }
 
         function initPhaser() {
@@ -269,12 +275,11 @@
             let vx = 0;
             let vy = 0;
 
-            // Xử lý di chuyển dựa trên phím D-pad được nhấn giữ
-            if (currentDir.left) vx = -speed;
-            else if (currentDir.right) vx = speed;
+            if (moveState.left) vx = -speed;
+            else if (moveState.right) vx = speed;
 
-            if (currentDir.up) vy = -speed;
-            else if (currentDir.down) vy = speed;
+            if (moveState.up) vy = -speed;
+            else if (moveState.down) vy = speed;
 
             localPlayer.body.setVelocity(vx, vy);
 
