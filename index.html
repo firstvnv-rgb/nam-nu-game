@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Cute v7.5 - Thêm Quái Vật</title>
+    <title>Bomberman Cute v7.8</title>
     <style>
         body { margin: 0; padding: 0; background: #0f172a; font-family: system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); text-align: center; }
@@ -26,7 +26,7 @@
 
     <div id="lobby">
         <h1 style="color: #fbbf24; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">BOMBERMAN CUTE</h1>
-        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Đã sửa lỗi hiển thị quái vật một mắt tím tinh nghịch</p>
+        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Hệ thống sửa lỗi thông báo Thua cuộc v7.8</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ CUTE</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA CUTE</button>
     </div>
@@ -50,13 +50,9 @@
         const socket = io("https://mushroom-server.onrender.com");
         let myGender = null, sceneContext = null;
         let pSprites = {}, mSprites = {}, shroomSprites = {}, itemSprites = {};
-        
-        let mapGroup = null; 
-        let currentGrid = [];
+        let mapGroup = null; let currentGrid = [];
         let TILE_SIZE = 0; let MAP_OFFSET_Y = 110;
-        
-        let activeDirection = null; 
-        let inputTimer = null;
+        let activeDirection = null; let inputTimer = null;
 
         function startGame(gender) {
             myGender = gender;
@@ -77,17 +73,14 @@
         }
 
         function preload() {
-            sceneContext = this;
-            let center = TILE_SIZE / 2;
+            sceneContext = this; let center = TILE_SIZE / 2;
             
-            // 1. Ô cỏ nền tối mắt lưới
             let cvGrass = document.createElement('canvas'); cvGrass.width = TILE_SIZE; cvGrass.height = TILE_SIZE;
             let ctxGrass = cvGrass.getContext('2d');
             ctxGrass.fillStyle = '#1e251c'; ctxGrass.fillRect(0,0,TILE_SIZE,TILE_SIZE);
             ctxGrass.strokeStyle = '#273024'; ctxGrass.lineWidth = 1; ctxGrass.strokeRect(0,0,TILE_SIZE,TILE_SIZE);
             this.textures.addCanvas('bg_grass', cvGrass);
 
-            // 2. Khối đá
             let cvStone = document.createElement('canvas'); cvStone.width = TILE_SIZE; cvStone.height = TILE_SIZE;
             let ctxStone = cvStone.getContext('2d');
             ctxStone.fillStyle = '#475569'; ctxStone.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
@@ -95,7 +88,6 @@
             ctxStone.fillStyle = '#334155'; ctxStone.fillRect(4,TILE_SIZE-14,TILE_SIZE-8,10);
             this.textures.addCanvas('stone', cvStone);
 
-            // 3. Khối gạch
             let cvBrick = document.createElement('canvas'); cvBrick.width = TILE_SIZE; cvBrick.height = TILE_SIZE;
             let ctxBrick = cvBrick.getContext('2d');
             ctxBrick.fillStyle = '#b45309'; ctxBrick.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
@@ -103,7 +95,6 @@
             ctxBrick.beginPath(); ctxBrick.moveTo(2, TILE_SIZE/2); ctxBrick.lineTo(TILE_SIZE-2, TILE_SIZE/2); ctxBrick.stroke();
             this.textures.addCanvas('brick', cvBrick);
 
-            // 4. Nhân vật Nam
             let cvNam = document.createElement('canvas'); cvNam.width = TILE_SIZE; cvNam.height = TILE_SIZE;
             let ctxNam = cvNam.getContext('2d');
             ctxNam.fillStyle = '#0ea5e9'; ctxNam.beginPath(); ctxNam.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNam.fill();
@@ -113,7 +104,6 @@
             ctxNam.strokeStyle = '#e11d48'; ctxNam.lineWidth = 2; ctxNam.beginPath(); ctxNam.arc(center, center+4, 4, 0, Math.PI); ctxNam.stroke();
             this.textures.addCanvas('p_nam', cvNam);
 
-            // 5. Nhân vật Nữ
             let cvNu = document.createElement('canvas'); cvNu.width = TILE_SIZE; cvNu.height = TILE_SIZE;
             let ctxNu = cvNu.getContext('2d');
             ctxNu.fillStyle = '#ec4899'; ctxNu.beginPath(); ctxNu.arc(center, center, TILE_SIZE*0.42, 0, Math.PI*2); ctxNu.fill();
@@ -123,7 +113,6 @@
             ctxNu.fillStyle = '#fda4af'; ctxNu.beginPath(); ctxNu.arc(center-9, center+4, 3, 0, Math.PI*2); ctxNu.arc(center+9, center+4, 3, 0, Math.PI*2); ctxNu.fill();
             this.textures.addCanvas('p_nu', cvNu);
 
-            // 6. Đồ họa Quái vật Alien tím cực chuẩn nét
             let cvMon = document.createElement('canvas'); cvMon.width = TILE_SIZE; cvMon.height = TILE_SIZE;
             let ctxMon = cvMon.getContext('2d');
             ctxMon.fillStyle = '#a855f7'; ctxMon.beginPath(); ctxMon.arc(center, center+4, TILE_SIZE*0.38, 0, Math.PI*2); ctxMon.fill();
@@ -132,7 +121,6 @@
             ctxMon.fillStyle = '#dc2626'; ctxMon.beginPath(); ctxMon.arc(center, center, 4, 0, Math.PI*2); ctxMon.fill();
             this.textures.addCanvas('monster', cvMon);
 
-            // 7. Quả bom nấm
             let cvShroom = document.createElement('canvas'); cvShroom.width = TILE_SIZE; cvShroom.height = TILE_SIZE;
             let ctxShroom = cvShroom.getContext('2d');
             ctxShroom.fillStyle = '#f59e0b'; ctxShroom.beginPath(); ctxShroom.arc(center, center+4, TILE_SIZE*0.4, 0, Math.PI*2); ctxShroom.fill();
@@ -140,7 +128,6 @@
             ctxShroom.strokeStyle = '#ef4444'; ctxShroom.lineWidth = 3; ctxShroom.beginPath(); ctxShroom.moveTo(center, center-12); ctxShroom.quadraticCurveTo(center+8, center-18, center+4, center-22); ctxShroom.stroke();
             this.textures.addCanvas('shroom', cvShroom);
 
-            // 8. Items
             let cvSpeed = document.createElement('canvas'); cvSpeed.width = TILE_SIZE; cvSpeed.height = TILE_SIZE;
             let ctxSpeed = cvSpeed.getContext('2d');
             ctxSpeed.fillStyle = '#10b981'; ctxSpeed.beginPath(); ctxSpeed.arc(center, center, TILE_SIZE*0.35, 0, Math.PI*2); ctxSpeed.fill();
@@ -171,14 +158,11 @@
                     } else {
                         sceneContext.tweens.add({ targets: pSprites[id], x: targetX, y: targetY, duration: 130 });
                     }
-
                     if (id === socket.id) {
                         document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
                     }
                 }
-                for (let id in pSprites) {
-                    if (!serverPlayers[id]) { pSprites[id].destroy(); delete pSprites[id]; }
-                }
+                for (let id in pSprites) { if (!serverPlayers[id]) { pSprites[id].destroy(); delete pSprites[id]; } }
             });
 
             socket.on('playerMoved', (data) => {
@@ -191,77 +175,80 @@
 
             socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(120, 239, 68, 68); });
 
-            // ĐỒNG BỘ QUÁI VẬT TỪ SERVER LÊN LAYER TRÊN CÙNG
             socket.on('updateMonsters', (serverMonsters) => {
                 let activeIds = serverMonsters.map(m => m.id);
                 serverMonsters.forEach(m => {
                     let targetX = m.gridX * TILE_SIZE + TILE_SIZE/2;
                     let targetY = m.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-
                     if (!mSprites[m.id]) {
                         mSprites[m.id] = sceneContext.add.sprite(targetX, targetY, 'monster').setDepth(9);
                     } else {
-                        mSprites[m.id].setDepth(9); // Ép quái nổi lên trên cỏ
+                        mSprites[m.id].setDepth(9);
                         sceneContext.tweens.add({ targets: mSprites[m.id], x: targetX, y: targetY, duration: 400 });
                     }
                 });
-                for (let id in mSprites) {
-                    if (!activeIds.includes(id)) { mSprites[id].destroy(); delete mSprites[id]; }
-                }
+                for (let id in mSprites) { if (!activeIds.includes(id)) { mSprites[id].destroy(); delete mSprites[id]; } }
             });
 
             socket.on('updateItems', (serverItems) => {
                 for (let key in itemSprites) { itemSprites[key].destroy(); } itemSprites = {};
                 for (let key in serverItems) {
                     let it = serverItems[key];
-                    let ix = it.x * TILE_SIZE + TILE_SIZE/2;
-                    let iy = it.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    let ix = it.x * TILE_SIZE + TILE_SIZE/2; let iy = it.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                     itemSprites[key] = sceneContext.add.sprite(ix, iy, `item_${it.type}`).setDepth(5).setScale(0.85);
                 }
             });
 
             socket.on('mushroomPlaced', (shroom) => {
-                let sx = shroom.gridX * TILE_SIZE + TILE_SIZE/2;
-                let sy = shroom.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                let sx = shroom.gridX * TILE_SIZE + TILE_SIZE/2; let sy = shroom.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                 shroomSprites[shroom.id] = sceneContext.add.sprite(sx, sy, 'shroom').setDepth(8);
                 sceneContext.tweens.add({ targets: shroomSprites[shroom.id], scale: 1.15, duration: 300, yoyo: true, repeat: -1 });
             });
 
             socket.on('mushroomExploded', (data) => {
                 if (shroomSprites[data.shroom.id]) { shroomSprites[data.shroom.id].destroy(); delete shroomSprites[data.shroom.id]; }
-                
                 data.explodedTiles.forEach(tile => {
                     let fx = tile.x * TILE_SIZE + TILE_SIZE/2; let fy = tile.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                     let fire = sceneContext.add.circle(fx, fy, TILE_SIZE/2 - 2, 0xef4444, 0.85).setDepth(11);
                     sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.6, duration: 350, onComplete: () => fire.destroy() });
                 });
-
-                currentGrid = data.newGrid; 
-                drawMap(); 
+                currentGrid = data.newGrid; drawMap(); 
             });
 
-            socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười thắng: ${data.winner.toUpperCase()}\nPhần thưởng: ${data.reward}`); });
+            // BẮT SỰ KIỆN PHÂN GIẢI THUANOTIFY HOÀN HẢO
+            socket.on('gameOver', (data) => {
+                let endDiv = document.createElement('div');
+                endDiv.style = "position:absolute; top:25%; left:8%; right:8%; background:rgba(15,23,42,0.96); border:3px solid #fbbf24; border-radius:20px; color:white; padding:25px; text-align:center; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-family:sans-serif;";
+                
+                // Nhận dạng xem có phải CHÍNH MÁY NÀY vừa bị chết hết máu không
+                let amILoser = (socket.id === data.loserId);
+                let titleText = amILoser ? "💀 BẠN ĐÃ THẤT BẠI 💀" : "🎉 CHIẾN THẮNG TRẬN ĐẤU 🎉";
+                let titleColor = amILoser ? "#ef4444" : "#34d399";
+                
+                endDiv.innerHTML = `
+                    <h2 style="color:${titleColor}; margin:0 0 12px 0; font-size:22px; letter-spacing:1px;">${titleText}</h2>
+                    <p style="font-size:16px; margin:6px 0;">Trạng thái: <b>${amILoser ? 'Bạn đã hết máu do Quái cắn hoặc Bom trúng!' : 'Chúc mừng bạn đã vượt qua thử thách!'}</b></p>
+                    <p style="font-size:15px; color:#e2e8f0; margin:6px 0; background:rgba(255,255,255,0.1); padding:8px; border-radius:8px;">🎁 Phần thưởng bên Công chúa: ${data.rewardText}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin-top:15px;">Màn chơi sẽ tự động thiết lập lại sau 4 giây...</p>
+                `;
+                document.body.appendChild(endDiv);
+                setTimeout(() => { endDiv.remove(); }, 3800);
+            });
+
             socket.on('resetMatch', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
         }
 
         function drawMap() {
             if(!currentGrid || currentGrid.length === 0) return;
             mapGroup.clear(true, true);
-            
             for (let y = 0; y < currentGrid.length; y++) {
                 for (let x = 0; x < currentGrid[y].length; x++) {
-                    let px = x * TILE_SIZE + TILE_SIZE/2; 
-                    let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    
-                    let grass = sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1);
-                    mapGroup.add(grass);
-                    
+                    let px = x * TILE_SIZE + TILE_SIZE/2; let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    let grass = sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1); mapGroup.add(grass);
                     if (currentGrid[y][x] === 1) {
-                        let stone = sceneContext.add.sprite(px, py, 'stone').setDepth(2);
-                        mapGroup.add(stone);
+                        let stone = sceneContext.add.sprite(px, py, 'stone').setDepth(2); mapGroup.add(stone);
                     } else if (currentGrid[y][x] === 2) {
-                        let brick = sceneContext.add.sprite(px, py, 'brick').setDepth(3);
-                        mapGroup.add(brick);
+                        let brick = sceneContext.add.sprite(px, py, 'brick').setDepth(3); mapGroup.add(brick);
                     }
                 }
             }
@@ -271,38 +258,22 @@
 
         function updateUI(data) {
             document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-            document.getElementById('info-reward').innerText = `Phần thưởng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
+            let displayReward = myGender === 'nam' ? data.reward.nam : data.reward.nu;
+            document.getElementById('info-reward').innerText = `Phần thưởng: ${displayReward}`;
         }
 
-        // CẢI TIẾN TỐC ĐỘ BƯỚC ĐI CHO MƯỢT MÀ HƠN
         function setupInputHandlers() {
-            const sendMoveRequest = () => {
-                if (!activeDirection) return;
-                socket.emit('requestMove', { dirX: activeDirection.x, dirY: activeDirection.y });
-            };
-
+            const sendMoveRequest = () => { if (!activeDirection) return; socket.emit('requestMove', { dirX: activeDirection.x, dirY: activeDirection.y }); };
             const bind = (id, dx, dy) => {
                 let el = document.getElementById(id);
                 el.addEventListener('pointerdown', (e) => {
-                    e.preventDefault();
-                    activeDirection = { x: dx, y: dy };
-                    sendMoveRequest();
-                    if(inputTimer) clearInterval(inputTimer);
-                    inputTimer = setInterval(sendMoveRequest, 150); 
+                    e.preventDefault(); activeDirection = { x: dx, y: dy }; sendMoveRequest();
+                    if(inputTimer) clearInterval(inputTimer); inputTimer = setInterval(sendMoveRequest, 150);
                 });
-
-                let stop = (e) => {
-                    e.preventDefault();
-                    activeDirection = null;
-                    if(inputTimer) { clearInterval(inputTimer); inputTimer = null; }
-                };
-                el.addEventListener('pointerup', stop);
-                el.addEventListener('pointerleave', stop);
-                el.addEventListener('pointercancel', stop);
+                let stop = (e) => { e.preventDefault(); activeDirection = null; if(inputTimer) { clearInterval(inputTimer); inputTimer = null; } };
+                el.addEventListener('pointerup', stop); el.addEventListener('pointerleave', stop); el.addEventListener('pointercancel', stop);
             };
-
-            bind('key-up', 0, -1); bind('key-down', 0, 1);
-            bind('key-left', -1, 0); bind('key-right', 1, 0);
+            bind('key-up', 0, -1); bind('key-down', 0, 1); bind('key-left', -1, 0); bind('key-right', 1, 0);
         }
 
         function handlePlant() { socket.emit('requestPlant'); }
