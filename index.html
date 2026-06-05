@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Tình Yêu Toàn Diện V4</title>
+    <title>Bomberman Tình Yêu Toàn Diện V4.2</title>
     <style>
         body { margin: 0; padding: 0; background: #111; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #111c24, #080d11); text-align: center; padding: 20px; box-sizing: border-box; }
-        .btn { padding: 16px 40px; font-size: 18px; font-weight: bold; border: none; border-radius: 50px; margin: 12px; color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.4); width: 80%; max-width: 28px0px; letter-spacing: 1px; transition: 0.2s; }
+        .btn { padding: 16px 40px; font-size: 18px; font-weight: bold; border: none; border-radius: 50px; margin: 12px; color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.4); width: 80%; max-width: 280px; letter-spacing: 1px; transition: 0.2s; }
         .btn-nam { background: linear-gradient(45deg, #00d2ff, #0066ff); }
         .btn-nu { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
         
-        /* Bố cục giao diện UI trên đỉnh màn hình cực chất */
         #ui-layer { position: absolute; top: 15px; left: 15px; right: 15px; color: white; background: rgba(10, 15, 20, 0.85); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         #info-level { font-weight: 800; color: #ffeb3b; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         #info-reward { color: #00ffcc; margin-top: 5px; font-size: 14px; font-weight: 600; }
         #info-status { color: #ff8a80; margin-top: 5px; font-size: 14px; font-weight: bold; }
         
-        /* Khu vực chứa các nút bấm hành động ở dưới đáy */
         #action-layer { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; padding: 0 30px; z-index: 10; pointer-events: none; }
         .touch-pad { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px dashed rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: bold; }
         #btn-plant { pointer-events: auto; width: 90px; height: 90px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 16px; box-shadow: 0 10px 25px rgba(211,47,47,0.5); letter-spacing: 1px; transform: scale(1); transition: 0.1s; }
@@ -28,30 +26,27 @@
 </head>
 <body>
 
-    <!-- MÀN HÌNH CHỌN NHÂN VẬT -->
     <div id="lobby">
         <h1 style="color: #ffeb3b; text-shadow: 0 4px 15px rgba(245,127,23,0.5); font-size: 32px; font-weight: 900; margin-bottom: 5px;">BOMBERMAN</h1>
-        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4</h2>
-        <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Đồ họa Full dọc di động mượt mà</p>
+        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.2</h2>
+        <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Đồ họa tự vẽ thuần Code nhẹ mượt</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
 
-    <!-- UI LAYER TRÊN ĐẦU -->
     <div id="ui-layer" style="display: none;">
         <div id="info-level">Cửa: 1 - Hiệp: 1</div>
         <div id="info-reward">Thắng được: Đang tải...</div>
         <div id="info-status">MÁU CỦA BẠN: 100/100</div>
     </div>
     
-    <!-- KHU VỰC ĐIỀU KHIỂN DƯỚI ĐÁY ĐIỆN THOẠI -->
     <div id="action-layer" style="display: none;">
         <div class="touch-pad">VUỐT ĐỂ ĐI</div>
         <button id="btn-plant" onclick="handlePlant()">ĐẶT<br>BOM</button>
     </div>
 
     <script>
-        // === ⚠️ NHỚ THAY ĐỔI ĐƯỜNG LINK RENDER CHÍNH XÁC CỦA BẠN VÀO ĐÂY ===
+        // === ⚠️ ĐƯỜNG LINK SERVER RENDER CỦA BẠN ===
         const socket = io("https://mushroom-server.onrender.com");
 
         let myGender = null;
@@ -60,7 +55,8 @@
         let remotePlayer = null;
         let bricksGroup, stoneGroup, monstersGroup, mushroomsGroup;
         let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
-        let TILE_SIZE = 0; // Sẽ tự động tính toán theo chiều rộng màn hình
+        let TILE_SIZE = 0; 
+        let MAP_OFFSET_Y = 110; // Khoảng cách đẩy bản đồ xuống dưới UI layer công thức chuẩn
         let lastDamageTime = 0;
 
         function startGame(gender) {
@@ -86,51 +82,49 @@
 
         function preload() {
             sceneContext = this;
-            
-            // Tự động tính toán kích thước ô lưới sao cho vừa khít chiều rộng màn hình của bạn
             TILE_SIZE = Math.floor(window.innerWidth / 15);
 
-            // 🟩 Tạo texture cỏ nền xanh mượt chất lượng cao
+            // 🟩 Tự vẽ Cỏ nền
             let canvasBG = document.createElement('canvas'); canvasBG.width = TILE_SIZE; canvasBG.height = TILE_SIZE;
             let ctx = canvasBG.getContext('2d');
             ctx.fillStyle = '#388e3c'; ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
             ctx.fillStyle = '#4caf50'; ctx.fillRect(1, 1, TILE_SIZE-2, TILE_SIZE-2);
             this.textures.addCanvas('bg_grass', canvasBG);
 
-            // 🧱 Tường Đá Cứng (Stone Block) màu xám viền Neon xanh
+            // 🧱 Tự vẽ Tường Đá Cứng
             let canvasStone = document.createElement('canvas'); canvasStone.width = TILE_SIZE; canvasStone.height = TILE_SIZE;
             ctx = canvasStone.getContext('2d'); ctx.fillStyle = '#1c2833'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
             ctx.strokeStyle = '#2e4053'; ctx.lineWidth = 3; ctx.strokeRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
             this.textures.addCanvas('stone', canvasStone);
 
-            // 🧱 Tường Gạch Phá Hủy Được bo góc 3D nổi bật
+            // 🧱 Tự vẽ Tường Gạch
             let canvasBrick = document.createElement('canvas'); canvasBrick.width = TILE_SIZE; canvasBrick.height = TILE_SIZE;
             ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#d35400'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
             ctx.fillStyle = '#e67e22'; ctx.fillRect(2,2,TILE_SIZE-4,TILE_SIZE-4);
             ctx.fillStyle = '#ba4a00'; ctx.fillRect(4, TILE_SIZE/2+1, TILE_SIZE-8, TILE_SIZE/2-4);
             this.textures.addCanvas('brick', canvasBrick);
 
-            // 👾 Quái vật bóng ma dạ quang có mắt dữ dằn
-            let canvasMonster = document.createElement('canvas'); canvasMonster.width = TILE_SIZE * 0.8; canvasMonster.height = TILE_SIZE * 0.8;
-            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#9b59b6'; ctx.beginPath(); ctx.arc(canvasMonster.width/2, canvasMonster.height/2, canvasMonster.width/2, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.fillRect(4,6,4,4); ctx.fillRect(14,6,4,4);
+            // 👾 Tự vẽ Quái Vật Tím
+            let canvasMonster = document.createElement('canvas'); canvasMonster.width = TILE_SIZE; canvasMonster.height = TILE_SIZE;
+            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#a832a4'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.fillRect(TILE_SIZE*0.3, TILE_SIZE*0.3, 4, 4); ctx.fillRect(TILE_SIZE*0.6, TILE_SIZE*0.3, 4, 4);
             this.textures.addCanvas('monster', canvasMonster);
 
-            // 🏃‍♂️‍➡️ Nhân vật Nam (Anh Iu Neon Blue)
-            let canvasNam = document.createElement('canvas'); canvasNam.width = TILE_SIZE * 0.8; canvasNam.height = TILE_SIZE * 0.8;
-            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(canvasNam.width/2, canvasNam.height/2, canvasNam.width/2, 0, Math.PI*2); ctx.fill();
+            // 🔵 Tự vẽ Hoàng Tử Nam (Xanh Neon)
+            let canvasNam = document.createElement('canvas'); canvasNam.width = TILE_SIZE; canvasNam.height = TILE_SIZE;
+            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
             this.textures.addCanvas('p_nam', canvasNam);
 
-            // 🏃‍♀️ Nhân vật Nữ (Em Bé Neon Pink)
-            let canvasNu = document.createElement('canvas'); canvasNu.width = TILE_SIZE * 0.8; canvasNu.height = TILE_SIZE * 0.8;
-            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(canvasNu.width/2, canvasNu.height/2, canvasNu.width/2, 0, Math.PI*2); ctx.fill();
+            // 🔴 Tự vẽ Công Chúa Nữ (Hồng Neon)
+            let canvasNu = document.createElement('canvas'); canvasNu.width = TILE_SIZE; canvasNu.height = TILE_SIZE;
+            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.4, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
             this.textures.addCanvas('p_nu', canvasNu);
 
-            // 💣 Quả Bom Nấm Vàng rực sáng
-            let canvasShroom = document.createElement('canvas'); canvasShroom.width = TILE_SIZE * 0.7; canvasShroom.height = TILE_SIZE * 0.7;
-            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(canvasShroom.width/2, canvasShroom.height/2, canvasShroom.width/2, 0, Math.PI*2); ctx.fill();
+            // 💣 Tự vẽ Quả Bom Nấm
+            let canvasShroom = document.createElement('canvas'); canvasShroom.width = TILE_SIZE; canvasShroom.height = TILE_SIZE;
+            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE * 0.35, 0, Math.PI*2); ctx.fill();
             this.textures.addCanvas('shroom', canvasShroom);
         }
 
@@ -142,7 +136,6 @@
 
             this.cameras.main.setBackgroundColor('#111');
 
-            // Cài đặt vuốt màn hình (Joystick ảo ở góc trái)
             this.input.on('pointerdown', (pointer) => {
                 if (pointer.x < window.innerWidth / 2) { joystick.active = true; joystick.startX = pointer.x; joystick.startY = pointer.y; }
             });
@@ -151,15 +144,15 @@
             });
             this.input.on('pointerup', () => { joystick.active = false; joystick.moveX = 0; joystick.moveY = 0; });
 
-            // ĐỒNG BỘ DỮ LIỆU BẢN ĐỒ TỪ SERVER RENDER
             socket.on('initGame', (data) => { drawMap(data.grid); updateUI(data); });
 
             socket.on('updatePlayers', (serverPlayers) => {
                 for (let id in serverPlayers) {
                     let p = serverPlayers[id];
-                    // Chuyển đổi tọa độ logic từ server sang tỉ lệ màn hình thực tế của điện thoại
+                    
+                    // SỬA LỖI TỌA ĐỘ: Chuyển đổi chuẩn xác từ tọa độ Server (gốc 40px) sang TILE_SIZE thực tế di động
                     let screenX = (p.x / 40) * TILE_SIZE;
-                    let screenY = (p.y / 40) * TILE_SIZE + 100; // Đẩy map xuống dưới 100px tránh phần UI trên đỉnh
+                    let screenY = (p.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
 
                     if (id === socket.id) {
                         if (!localPlayer) {
@@ -179,7 +172,7 @@
             socket.on('playerMoved', (data) => {
                 if (remotePlayer && remotePlayer.id === data.id) {
                     let sX = (data.x / 40) * TILE_SIZE;
-                    let sY = (data.y / 40) * TILE_SIZE + 100;
+                    let sY = (data.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
                     remotePlayer.setPosition(sX, sY);
                 }
             });
@@ -188,14 +181,14 @@
                 monstersGroup.clear(true, true);
                 serverMonsters.forEach(m => {
                     let sX = (m.x / 40) * TILE_SIZE;
-                    let sY = (m.y / 40) * TILE_SIZE + 100;
+                    let sY = (m.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
                     monstersGroup.create(sX, sY, 'monster');
                 });
             });
 
             socket.on('mushroomPlaced', (shroom) => {
                 let sX = (shroom.x / 40) * TILE_SIZE;
-                let sY = (shroom.y / 40) * TILE_SIZE + 100;
+                let sY = (shroom.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
                 let m = sceneContext.physics.add.sprite(sX, sY, 'shroom');
                 m.id = shroom.id; mushroomsGroup.add(m);
             });
@@ -205,15 +198,14 @@
 
                 data.explodedTiles.forEach(tile => {
                     let sX = tile.x * TILE_SIZE + TILE_SIZE / 2;
-                    let sY = tile.y * TILE_SIZE + TILE_SIZE / 2 + 100;
+                    let sY = tile.y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
                     
-                    // 🔥 Hiệu ứng vụ nổ màu cam rực rỡ lan tỏa hình chữ thập cực ngầu
                     let fire = sceneContext.add.circle(sX, sY, TILE_SIZE / 2 - 2, 0xff5722, 0.85);
                     sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.7, duration: 250, onComplete: () => fire.destroy() });
 
                     if (localPlayer) {
                         let playerGridX = Math.floor(localPlayer.x / TILE_SIZE);
-                        let playerGridY = Math.floor((localPlayer.y - 100) / TILE_SIZE);
+                        let playerGridY = Math.floor((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE);
                         if (playerGridX === tile.x && playerGridY === tile.y) {
                             if (data.shroom.owner !== socket.id) socket.emit('takeDamage', { amount: 25 });
                         }
@@ -231,13 +223,13 @@
             stoneGroup.clear(true, true);
             bricksGroup.clear(true, true);
 
-            // Vẽ toàn bộ nền cỏ xanh lấp đầy phần map trước khi dựng tường gạch
-            sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + 100, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.3);
+            // Tạo khung lưới nền cỏ
+            sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.3);
 
             for (let y = 0; y < grid.length; y++) {
                 for (let x = 0; x < grid[y].length; x++) {
                     let posX = x * TILE_SIZE + TILE_SIZE / 2;
-                    let posY = y * TILE_SIZE + TILE_SIZE / 2 + 100;
+                    let posY = y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
                     if (grid[y][x] === 1) stoneGroup.create(posX, posY, 'stone');
                     else if (grid[y][x] === 2) bricksGroup.create(posX, posY, 'brick');
                 }
@@ -255,9 +247,8 @@
                 let angle = Math.atan2(joystick.moveY, joystick.moveX);
                 localPlayer.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
                 
-                // Quy đổi ngược tọa độ thực tế về tọa độ logic để gửi lên server đồng bộ
                 let logicX = (localPlayer.x / TILE_SIZE) * 40;
-                let logicY = ((localPlayer.y - 100) / TILE_SIZE) * 40;
+                let logicY = ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40;
                 socket.emit('playerMove', { x: logicX, y: logicY });
             } else if (localPlayer) {
                 localPlayer.body.setVelocity(0, 0);
@@ -280,7 +271,7 @@
         function handlePlant() {
             if (localPlayer) {
                 let logicX = (localPlayer.x / TILE_SIZE) * 40;
-                let logicY = ((localPlayer.y - 100) / TILE_SIZE) * 40;
+                let logicY = ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40;
                 socket.emit('placeMushroom', { x: logicX, y: logicY });
             }
         }
