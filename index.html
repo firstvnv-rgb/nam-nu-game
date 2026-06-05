@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Siêu Cấp V6.0</title>
+    <title>Bomberman Siêu Cấp V6.1</title>
     <style>
-        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; }
+        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #0f172a; text-align: center; }
-        .btn { padding: 15px 35px; font-size: 18px; font-weight: bold; border: none; border-radius: 30px; margin: 10px; color: white; width: 250px; }
+        .btn { padding: 15px 35px; font-size: 18px; font-weight: bold; border: none; border-radius: 30px; margin: 10px; color: white; width: 250px; cursor: pointer; }
         .btn-nam { background: #0284c7; } .btn-nu { background: #db2777; }
-        #ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; color: white; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; z-index: 10; font-size: 15px; text-align: center; }
-        #control-container { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 99; }
-        .dpad { display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px); gap: 5px; }
-        .dpad-btn { background: #334155; color: white; font-weight: bold; font-size: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #475569; }
-        #btn-plant { width: 85px; height: 85px; background: #dc2626; border-radius: 50%; border: 3px solid #fff; color: white; font-weight: bold; font-size: 16px; }
+        #ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; color: white; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; z-index: 10; font-size: 15px; text-align: center; pointer-events: none; }
+        #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 999; }
+        .dpad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; }
+        .dpad-btn { background: #334155; color: white; font-weight: bold; font-size: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #475569; touch-action: none; cursor: pointer; }
+        .dpad-btn:active { background: #1e293b; transform: scale(0.95); }
+        #btn-plant { width: 90px; height: 90px; background: #dc2626; border-radius: 50%; border: 4px solid #fff; color: white; font-weight: bold; font-size: 16px; cursor: pointer; touch-action: none; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
+        #btn-plant:active { transform: scale(0.9); background: #b91c1c; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -21,8 +23,8 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #f59e0b;">BOMBERMAN V6.0</h1>
-        <p>Sửa lỗi hiển thị đen màn hình cực chuẩn</p>
+        <h1 style="color: #f59e0b; margin-bottom: 5px;">BOMBERMAN V6.1</h1>
+        <p style="color: #94a3b8; margin-top: 0; font-size: 14px;">Sửa triệt để lỗi liệt phím di chuyển trên điện thoại</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
@@ -48,14 +50,19 @@
         let pSprites = {}, mSprites = {}, shroomSprites = {}, itemSprites = {};
         let currentGrid = [];
         let TILE_SIZE = 0; let MAP_OFFSET_Y = 100;
-        let lastMoveTime = 0; let moveDelay = 250; // Tốc độ di chuyển mặc định theo ô (ms)
+        
+        // Cấu hình di chuyển mượt mà
+        let lastMoveTime = 0; 
+        let moveDelay = 220; // Tốc độ di chuyển bước ô (ms)
+        let activeDirection = null; // Hướng đang được nhấn giữ liên tục
+        let intervalTimer = null;
 
         function startGame(gender) {
             myGender = gender;
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('control-container').style.display = 'flex';
-            initPhaser(); setupDpadEvents();
+            initPhaser();
             socket.emit('joinGame', gender);
         }
 
@@ -70,7 +77,6 @@
 
         function preload() {
             sceneContext = this;
-            // Vẽ đồ họa hình khối tránh lỗi thiếu file ảnh nền
             let createText = (key, color, isCircle=false) => {
                 let canvas = document.createElement('canvas'); canvas.width = TILE_SIZE; canvas.height = TILE_SIZE;
                 let ctx = canvas.getContext('2d'); ctx.fillStyle = color;
@@ -84,10 +90,11 @@
         }
 
         function create() {
+            setupDpadControls(); // Kích hoạt hệ thống phím bấm nâng cao mới
+
             socket.on('initGame', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
 
             socket.on('updatePlayers', (serverPlayers) => {
-                // Xóa sprite cũ vẽ sprite mới theo Grid chuẩn xác
                 for (let id in pSprites) { pSprites[id].destroy(); } pSprites = {};
                 for (let id in serverPlayers) {
                     let p = serverPlayers[id];
@@ -100,7 +107,15 @@
                 }
             });
 
-            socket.on('playerBuff', (data) => { if(data.type === 'speed') moveDelay = Math.max(120, moveDelay - 30); });
+            socket.on('playerMoved', (data) => {
+                if (pSprites[data.id]) {
+                    let px = data.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let py = data.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    pSprites[data.id].setPosition(px, py);
+                }
+            });
+
+            socket.on('playerBuff', (data) => { if(data.type === 'speed') moveDelay = Math.max(100, moveDelay - 30); });
             socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(100, 255, 0, 0); });
 
             socket.on('updateMonsters', (serverMonsters) => {
@@ -140,7 +155,7 @@
             });
 
             socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười chiến thắng: ${data.winner.toUpperCase()}\nThưởng: ${data.reward}`); });
-            socket.on('resetMatch', (data) => { moveDelay = 250; currentGrid = data.grid; drawMap(); updateUI(data); });
+            socket.on('resetMatch', (data) => { moveDelay = 220; currentGrid = data.grid; drawMap(); updateUI(data); });
         }
 
         function drawMap() {
@@ -162,24 +177,61 @@
             document.getElementById('info-reward').innerText = `Phần thưởng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
         }
 
-        function setupDpadEvents() {
-            const handleMove = (dx, dy) => {
-                let now = Date.now(); if (now - lastMoveTime < moveDelay) return;
-                let mySprite = pSprites[socket.id]; if (!mySprite) return;
+        // 🕹️ HỆ THỐNG ĐIỀU KHIỂN CHẠM/GIỮ POINTER ĐA NỀN TẢNG MỚI
+        function setupDpadControls() {
+            const executeMove = () => {
+                if (!activeDirection) return;
+                let now = Date.now();
+                if (now - lastMoveTime < moveDelay) return;
+
+                let mySprite = pSprites[socket.id];
+                if (!mySprite) return;
                 
                 let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
                 let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
-                let nX = curGridX + dx; let nY = curGridY + dy;
+                
+                let dx = activeDirection.x;
+                let dy = activeDirection.y;
+                let nX = curGridX + dx;
+                let nY = curGridY + dy;
 
                 if (nY >= 0 && nY < 11 && nX >= 0 && nX < 15 && currentGrid[nY][nX] === 0) {
                     lastMoveTime = now;
+                    // Cập nhật vị trí tạm thời ở client luôn cho mượt
+                    mySprite.setPosition(nX * TILE_SIZE + TILE_SIZE/2, nY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y);
                     socket.emit('playerMove', { gridX: nX, gridY: nY });
                 }
             };
-            document.getElementById('key-up').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(0, -1); });
-            document.getElementById('key-down').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(0, 1); });
-            document.getElementById('key-left').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(-1, 0); });
-            document.getElementById('key-right').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(1, 0); });
+
+            const bindKey = (id, dx, dy) => {
+                const btn = document.getElementById(id);
+                
+                // Khi nhấn xuống (Chuột hoặc Ngón tay đều nhận)
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    activeDirection = { x: dx, y: dy };
+                    executeMove();
+                    
+                    // Tạo vòng lặp chạy liên tục khi giữ đè nút
+                    if(intervalTimer) clearInterval(intervalTimer);
+                    intervalTimer = setInterval(executeMove, 50);
+                });
+
+                // Khi nhấc tay lên hoặc rời ngón tay khỏi nút
+                const stopMove = (e) => {
+                    e.preventDefault();
+                    activeDirection = null;
+                    if(intervalTimer) { clearInterval(intervalTimer); intervalTimer = null; }
+                };
+                btn.addEventListener('pointerup', stopMove);
+                btn.addEventListener('pointercancel', stopMove);
+                btn.addEventListener('pointerleave', stopMove);
+            };
+
+            bindKey('key-up', 0, -1);
+            bindKey('key-down', 0, 1);
+            bindKey('key-left', -1, 0);
+            bindKey('key-right', 1, 0);
         }
 
         function checkMonsterCollision(monsters) {
