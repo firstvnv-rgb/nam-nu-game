@@ -15,9 +15,10 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-start; 
-            padding-top: 10px;
+            padding: 10px;
             min-height: 100vh; 
-            overflow: hidden; 
+            overflow-x: hidden;
+            overflow-y: auto;
             color: #fff; 
             user-select: none; 
             box-sizing: border-box;
@@ -27,42 +28,45 @@
             max-width: 480px; 
             display: flex; 
             justify-content: space-around; 
-            padding: 10px 0; 
+            padding: 12px 0; 
             font-weight: bold; 
             font-size: 16px; 
             background: rgba(255,255,255,0.1); 
             border-radius: 8px; 
-            margin-bottom: 8px; 
+            margin-bottom: 10px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
         }
-        /* Khung chứa Game - Cố định tọa độ chuẩn chỉnh */
+        /* Khung chứa Game - Sử dụng min-height cố định khoảng trống an toàn tuyệt đối */
         .game-wrapper {
             position: relative;
-            width: 480px;
+            width: 100%;
+            max-width: 480px;
             height: 352px;
+            min-height: 352px;
             border: 4px solid #e94560; 
             border-radius: 12px; 
             overflow: hidden; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
             background: #16161a;
+            box-sizing: border-box;
         }
         #game-container {
             width: 100%;
             height: 100%;
         }
-        /* Màn hình phủ (Chọn nhân vật / Kết quả) bám chặt vào khung wrapper không bị lệch */
+        /* Màn hình phủ bắt buộc ép chặt phủ kín 100% diện tích wrapper cha */
         .overlay-screen { 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(15,15,26,0.95); 
+            background: rgba(22, 22, 26, 0.98); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            z-index: 99; 
+            z-index: 999; 
             padding: 20px; 
             box-sizing: border-box; 
             text-align: center; 
@@ -71,7 +75,7 @@
             background: linear-gradient(45deg, #ff416c, #ff4b2b); 
             border: none; 
             color: white; 
-            padding: 10px 24px; 
+            padding: 12px 28px; 
             font-size: 16px; 
             font-weight: bold; 
             border-radius: 25px; 
@@ -94,25 +98,27 @@
             margin: 8px 0; 
             line-height: 1.4; 
         }
-        /* Khu vực điều khiển tách biệt an toàn phía dưới */
+        /* Khu vực nút bấm điều khiển độc lập ở phía dưới */
         #control-pad { 
             width: 100%; 
             max-width: 480px; 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; 
+            gap: 12px; 
             padding: 15px; 
             box-sizing: border-box; 
-            margin-top: 5px;
+            margin-top: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
         }
         .ctrl-btn { 
             background: #1f4068; 
             border: 2px solid #162447; 
             border-radius: 15px; 
             color: white; 
-            font-size: 24px; 
+            font-size: 26px; 
             font-weight: bold; 
-            height: 55px; 
+            height: 60px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -132,11 +138,11 @@
 
     <div class="game-wrapper">
         <div id="select-screen" class="overlay-screen">
-            <h2 style="color: #e94560; margin-bottom: 5px;">BOMBERMAN CUTE</h2>
-            <p style="color: #aaa; margin-top:0; font-size:14px;">Chế độ: Đấu Trường 3 Cấp Độ</p>
-            <div style="display: flex; gap: 15px; margin-top: 5px;">
-                <button class="btn" onclick="joinAs('nam')" style="background: linear-gradient(45deg, #00c6ff, #0072ff);">Hoàng Tử (Nam)</button>
-                <button class="btn" onclick="joinAs('nu')" style="background: linear-gradient(45deg, #f857a6, #ff5858);">Công Chúa (Nữ)</button>
+            <h2 style="color: #e94560; margin: 0 0 5px 0; font-size: 26px; letter-spacing: 1px;">BOMBERMAN CUTE</h2>
+            <p style="color: #aaa; margin: 0 0 15px 0; font-size:14px;">Chế độ: Đấu Trường 3 Cấp Độ</p>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn" onclick="joinAs('nam')" style="background: linear-gradient(45deg, #00c6ff, #0072ff); margin-top: 0;">Hoàng Tử (Nam)</button>
+                <button class="btn" onclick="joinAs('nu')" style="background: linear-gradient(45deg, #f857a6, #ff5858); margin-top: 0;">Công Chúa (Nữ)</button>
             </div>
         </div>
 
@@ -163,7 +169,7 @@
     </div>
 
     <script>
-        // LƯU Ý: Bạn thay link Render của bạn vào đoạn dưới này nhé!
+        // Liên kết tới Server Render của bạn
         const socket = io("https://mushroom-server.onrender.com"); 
 
         let myGender = null;
@@ -261,7 +267,6 @@
 
             socket.on('mushroomExploded', (data) => {
                 let k = data.shroom.id; if (localMushrooms[k]) { localMushrooms[k].destroy(); delete localMushrooms[k]; }
-                
                 data.explodedTiles.forEach(tile => {
                     let ef = sceneContext.add.rectangle(tile.x * TILE_SIZE + 16, tile.y * TILE_SIZE + 16, 28, 28, 0xf94144, 0.8).setZ(6);
                     sceneContext.tweens.add({ targets: ef, alpha: 0, duration: 300, onComplete: () => ef.destroy() });
@@ -279,7 +284,6 @@
             });
 
             socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(150, 255, 0, 0); });
-
             socket.on('gameWin', (info) => { showEndPopup("CHIẾN THẮNG 🎉", info.rewardText, true); });
             socket.on('gameOver', () => { showEndPopup("THẤT BẠI 💔", "Bạn đã ngã xuống trước đối phương!", false); });
 
@@ -312,10 +316,8 @@
             document.getElementById('popup-title').innerText = title;
             document.getElementById('popup-title').style.color = isWin ? "#43aa8b" : "#e94560";
             document.getElementById('popup-reward').innerText = rewardText;
-            
             let btn = document.getElementById('btn-next-match');
             btn.onclick = () => { socket.emit('nextMatchRequest', isWin); };
-            
             document.getElementById('result-screen').classList.remove('hidden');
         }
 
