@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Tình Yêu Toàn Diện V4.2</title>
+    <title>Bomberman Tình Yêu Toàn Diện V4.3</title>
     <style>
         body { margin: 0; padding: 0; background: #111; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #111c24, #080d11); text-align: center; padding: 20px; box-sizing: border-box; }
@@ -28,7 +28,7 @@
 
     <div id="lobby">
         <h1 style="color: #ffeb3b; text-shadow: 0 4px 15px rgba(245,127,23,0.5); font-size: 32px; font-weight: 900; margin-bottom: 5px;">BOMBERMAN</h1>
-        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.2</h2>
+        <h2 style="color: #ff4081; margin-top: 0; font-size: 20px; font-weight: 600;">Nấm Tình Yêu V4.3</h2>
         <p style="color: #8a99a6; font-size: 14px; margin-bottom: 30px;">Đồ họa tự vẽ thuần Code nhẹ mượt</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
@@ -53,10 +53,10 @@
         let sceneContext = null;
         let localPlayer = null;
         let remotePlayer = null;
-        let bricksGroup, stoneGroup, monstersGroup, mushroomsGroup;
+        let gridContainer, bricksGroup, stoneGroup, monstersGroup, mushroomsGroup;
         let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
         let TILE_SIZE = 0; 
-        let MAP_OFFSET_Y = 110; // Khoảng cách đẩy bản đồ xuống dưới UI layer công thức chuẩn
+        let MAP_OFFSET_Y = 110; 
         let lastDamageTime = 0;
 
         function startGame(gender) {
@@ -129,10 +129,12 @@
         }
 
         function create() {
+            // KHỞI TẠO CÁC NHÓM THEO THỨ TỰ THẤP ĐẾN CAO ĐỂ TRANH ĐÈ LÊN NHAU
+            gridContainer = this.add.container(0, 0); // Lớp nền dưới cùng
             stoneGroup = this.physics.add.staticGroup();
             bricksGroup = this.physics.add.staticGroup();
-            monstersGroup = this.physics.add.group();
             mushroomsGroup = this.physics.add.group();
+            monstersGroup = this.physics.add.group();
 
             this.cameras.main.setBackgroundColor('#111');
 
@@ -150,7 +152,6 @@
                 for (let id in serverPlayers) {
                     let p = serverPlayers[id];
                     
-                    // SỬA LỖI TỌA ĐỘ: Chuyển đổi chuẩn xác từ tọa độ Server (gốc 40px) sang TILE_SIZE thực tế di động
                     let screenX = (p.x / 40) * TILE_SIZE;
                     let screenY = (p.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
 
@@ -161,10 +162,16 @@
                             sceneContext.physics.add.collider(localPlayer, stoneGroup);
                             sceneContext.physics.add.collider(localPlayer, bricksGroup);
                         } else { localPlayer.setPosition(screenX, screenY); }
+                        
+                        // Đảm bảo nhân vật luôn đứng trên đỉnh (Top Layer)
+                        localPlayer.setDepth(100);
                         document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
                     } else {
-                        if (!remotePlayer) { remotePlayer = sceneContext.add.sprite(screenX, screenY, `p_${p.gender}`); remotePlayer.id = id; }
-                        else { remotePlayer.setPosition(screenX, screenY); }
+                        if (!remotePlayer) { 
+                            remotePlayer = sceneContext.add.sprite(screenX, screenY, `p_${p.gender}`); 
+                            remotePlayer.id = id; 
+                        } else { remotePlayer.setPosition(screenX, screenY); }
+                        remotePlayer.setDepth(99); // Người chơi khác nằm ngay dưới bạn
                     }
                 }
             });
@@ -182,7 +189,8 @@
                 serverMonsters.forEach(m => {
                     let sX = (m.x / 40) * TILE_SIZE;
                     let sY = (m.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
-                    monstersGroup.create(sX, sY, 'monster');
+                    let mon = monstersGroup.create(sX, sY, 'monster');
+                    mon.setDepth(50); // Quái vật nằm dưới lớp nhân vật
                 });
             });
 
@@ -190,7 +198,9 @@
                 let sX = (shroom.x / 40) * TILE_SIZE;
                 let sY = (shroom.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
                 let m = sceneContext.physics.add.sprite(sX, sY, 'shroom');
-                m.id = shroom.id; mushroomsGroup.add(m);
+                m.id = shroom.id; 
+                m.setDepth(10); // Quả bom nằm sát nền đất
+                mushroomsGroup.add(m);
             });
 
             socket.on('mushroomExploded', (data) => {
@@ -201,6 +211,7 @@
                     let sY = tile.y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
                     
                     let fire = sceneContext.add.circle(sX, sY, TILE_SIZE / 2 - 2, 0xff5722, 0.85);
+                    fire.setDepth(20);
                     sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.7, duration: 250, onComplete: () => fire.destroy() });
 
                     if (localPlayer) {
@@ -222,16 +233,23 @@
         function drawMap(grid) {
             stoneGroup.clear(true, true);
             bricksGroup.clear(true, true);
+            gridContainer.removeAll(true); // Làm sạch lớp nền cỏ cũ
 
-            // Tạo khung lưới nền cỏ
-            sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.3);
+            // 🟩 Vẽ lưới cỏ cố định ở container nền (Nằm dưới cùng hệ thống)
+            let grassGrid = sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.3);
+            gridContainer.add(grassGrid);
 
             for (let y = 0; y < grid.length; y++) {
                 for (let x = 0; x < grid[y].length; x++) {
                     let posX = x * TILE_SIZE + TILE_SIZE / 2;
                     let posY = y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
-                    if (grid[y][x] === 1) stoneGroup.create(posX, posY, 'stone');
-                    else if (grid[y][x] === 2) bricksGroup.create(posX, posY, 'brick');
+                    if (grid[y][x] === 1) {
+                        let st = stoneGroup.create(posX, posY, 'stone');
+                        st.setDepth(30); // Tường đá
+                    } else if (grid[y][x] === 2) {
+                        let br = bricksGroup.create(posX, posY, 'brick');
+                        br.setDepth(31); // Tường gạch phá hủy được
+                    }
                 }
             }
         }
