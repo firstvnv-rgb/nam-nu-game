@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Pro v7.1 - Đồng Bộ Bản Đồ</title>
+    <title>Bomberman Pro v7.2 - Sửa Lỗi Đứng Im</title>
     <style>
         body { margin: 0; padding: 0; background: #0f172a; font-family: system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
         #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); text-align: center; }
@@ -25,8 +25,8 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #f59e0b; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">BOMBERMAN V7.1</h1>
-        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Đã sửa triệt để lỗi nổ không mất gạch</p>
+        <h1 style="color: #f59e0b; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">BOMBERMAN V7.2</h1>
+        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Fix triệt để lỗi lớp hiển thị đè nhân vật</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
@@ -51,7 +51,6 @@
         let myGender = null, sceneContext = null;
         let pSprites = {}, mSprites = {}, shroomSprites = {}, itemSprites = {};
         
-        // Quản lý Map bằng Group để xóa đi vẽ lại sạch sẽ không bị lỗi đè ảnh
         let mapGroup = null; 
         let currentGrid = [];
         let TILE_SIZE = 0; let MAP_OFFSET_Y = 110;
@@ -98,7 +97,6 @@
         }
 
         function create() {
-            // Tạo một static group để quản lý toàn bộ ô nền, gạch và đá
             mapGroup = sceneContext.add.group();
             setupInputHandlers();
 
@@ -111,8 +109,10 @@
                     let targetY = p.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
 
                     if (!pSprites[id]) {
+                        // Thêm setDepth(10) cố định tầng cao nhất
                         pSprites[id] = sceneContext.add.sprite(targetX, targetY, `p_${p.gender}`).setDepth(10);
                     } else {
+                        pSprites[id].setDepth(10); // Đảm bảo luôn nổi lên trên
                         sceneContext.tweens.add({ targets: pSprites[id], x: targetX, y: targetY, duration: 140 });
                     }
 
@@ -127,6 +127,7 @@
 
             socket.on('playerMoved', (data) => {
                 if (pSprites[data.id]) {
+                    pSprites[data.id].setDepth(10);
                     let targetX = data.gridX * TILE_SIZE + TILE_SIZE/2;
                     let targetY = data.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                     sceneContext.tweens.add({ targets: pSprites[data.id], x: targetX, y: targetY, duration: 120 });
@@ -144,6 +145,7 @@
                     if (!mSprites[m.id]) {
                         mSprites[m.id] = sceneContext.add.sprite(targetX, targetY, 'monster').setDepth(9);
                     } else {
+                        mSprites[m.id].setDepth(9);
                         sceneContext.tweens.add({ targets: mSprites[m.id], x: targetX, y: targetY, duration: 450 });
                     }
                 });
@@ -169,7 +171,6 @@
                 sceneContext.tweens.add({ targets: shroomSprites[shroom.id], scale: 1.15, duration: 300, yoyo: true, repeat: -1 });
             });
 
-            // Khi bom nổ nhận lưới map mới -> Cập nhật vẽ lại ngay lập tức
             socket.on('mushroomExploded', (data) => {
                 if (shroomSprites[data.shroom.id]) { shroomSprites[data.shroom.id].destroy(); delete shroomSprites[data.shroom.id]; }
                 
@@ -180,18 +181,16 @@
                 });
 
                 currentGrid = data.newGrid; 
-                drawMap(); // Gọi vẽ lại để gạch biến mất đồng bộ
+                drawMap(); 
             });
 
             socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười thắng: ${data.winner.toUpperCase()}\nPhần thưởng: ${data.reward}`); });
             socket.on('resetMatch', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
         }
 
-        // Sửa hoàn toàn lỗi đè ảnh: Clear sạch các block cũ trước khi vẽ lại mảng lưới mới
         function drawMap() {
             if(!currentGrid || currentGrid.length === 0) return;
             
-            // Xóa sạch tất cả các hình ảnh cũ có trong Group map
             mapGroup.clear(true, true);
             
             for (let y = 0; y < currentGrid.length; y++) {
@@ -199,7 +198,6 @@
                     let px = x * TILE_SIZE + TILE_SIZE/2; 
                     let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                     
-                    // Thêm cỏ vào group
                     let grass = sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1);
                     mapGroup.add(grass);
                     
@@ -212,6 +210,10 @@
                     }
                 }
             }
+
+            // MẸO QUAN TRỌNG: Sau khi vẽ lại map xong, ép tất cả Player và Monster nổi lên trên layer bản đồ ngay lập tức
+            for (let id in pSprites) { if (pSprites[id]) pSprites[id].setDepth(10); }
+            for (let id in mSprites) { if (mSprites[id]) mSprites[id].setDepth(9); }
         }
 
         function updateUI(data) {
