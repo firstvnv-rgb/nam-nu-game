@@ -7,19 +7,120 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io-client.min.js"></script>
     <style>
-        body { margin: 0; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; user-select: none; }
-        #header-info { width: 100%; max-width: 600px; display: flex; justify-content: space-around; padding: 10px; font-weight: bold; font-size: 16px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
-        #game-container { border: 4px solid #e94560; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); background: #16161a; }
-        .overlay-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,15,26,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 20px; box-sizing: border-box; text-align: center; }
-        .btn { background: linear-gradient(45deg, #ff416c, #ff4b2b); border: none; color: white; padding: 12px 35px; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 15px rgba(255,65,108,0.4); transition: transform 0.2s; }
+        body { 
+            margin: 0; 
+            background-color: #1a1a2e; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            padding-top: 10px;
+            min-height: 100vh; 
+            overflow: hidden; 
+            color: #fff; 
+            user-select: none; 
+            box-sizing: border-box;
+        }
+        #header-info { 
+            width: 100%; 
+            max-width: 480px; 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 10px 0; 
+            font-weight: bold; 
+            font-size: 16px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            margin-bottom: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+        }
+        /* Khung chứa Game - Cố định tọa độ chuẩn chỉnh */
+        .game-wrapper {
+            position: relative;
+            width: 480px;
+            height: 352px;
+            border: 4px solid #e94560; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            background: #16161a;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+        }
+        /* Màn hình phủ (Chọn nhân vật / Kết quả) bám chặt vào khung wrapper không bị lệch */
+        .overlay-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15,15,26,0.95); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 99; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            text-align: center; 
+        }
+        .btn { 
+            background: linear-gradient(45deg, #ff416c, #ff4b2b); 
+            border: none; 
+            color: white; 
+            padding: 10px 24px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            box-shadow: 0 5px 15px rgba(255,65,108,0.4); 
+            transition: transform 0.2s; 
+        }
         .btn:active { transform: scale(0.95); }
         .hidden { display: none !important; }
-        #popup-title { font-size: 28px; font-weight: bold; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        #popup-reward { font-size: 16px; color: #f9d423; background: rgba(255,215,0,0.1); padding: 12px; border-radius: 8px; border: 1px dashed #f9d423; max-width: 80%; margin: 10px 0; font-style: italic; line-height: 1.4; }
-        #control-pad { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; box-sizing: border-box; }
-        .ctrl-btn { background: #1f4068; border: 2px solid #162447; border-radius: 15px; color: white; font-size: 24px; font-weight: bold; height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        #popup-title { font-size: 26px; font-weight: bold; margin-bottom: 5px; }
+        #popup-reward { 
+            font-size: 14px; 
+            color: #f9d423; 
+            background: rgba(255,215,0,0.1); 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px dashed #f9d423; 
+            max-width: 90%; 
+            margin: 8px 0; 
+            line-height: 1.4; 
+        }
+        /* Khu vực điều khiển tách biệt an toàn phía dưới */
+        #control-pad { 
+            width: 100%; 
+            max-width: 480px; 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            padding: 15px; 
+            box-sizing: border-box; 
+            margin-top: 5px;
+        }
+        .ctrl-btn { 
+            background: #1f4068; 
+            border: 2px solid #162447; 
+            border-radius: 15px; 
+            color: white; 
+            font-size: 24px; 
+            font-weight: bold; 
+            height: 55px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+            touch-action: none; 
+        }
         .ctrl-btn:active { background: #e94560; }
-        #btn-bomb { background: #e94560; border-color: #ff416c; grid-column: 3; font-size: 20px; }
+        #btn-bomb { background: #e94560; border-color: #ff416c; grid-column: 3; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -29,11 +130,11 @@
         <div>HIỆP ĐẤU: <span id="txt-round" style="color:#00fff5;">1/3</span></div>
     </div>
 
-    <div style="position: relative;">
+    <div class="game-wrapper">
         <div id="select-screen" class="overlay-screen">
             <h2 style="color: #e94560; margin-bottom: 5px;">BOMBERMAN CUTE</h2>
             <p style="color: #aaa; margin-top:0; font-size:14px;">Chế độ: Đấu Trường 3 Cấp Độ</p>
-            <div style="display: flex; gap: 20px; margin-top: 10px;">
+            <div style="display: flex; gap: 15px; margin-top: 5px;">
                 <button class="btn" onclick="joinAs('nam')" style="background: linear-gradient(45deg, #00c6ff, #0072ff);">Hoàng Tử (Nam)</button>
                 <button class="btn" onclick="joinAs('nu')" style="background: linear-gradient(45deg, #f857a6, #ff5858);">Công Chúa (Nữ)</button>
             </div>
@@ -41,7 +142,7 @@
 
         <div id="result-screen" class="overlay-screen hidden">
             <div id="popup-title">KẾT QUẢ</div>
-            <div style="font-size:14px; color:#aaa; margin-top:5px;">Phần thưởng giao kèo ván này:</div>
+            <div style="font-size:13px; color:#aaa; margin-top:3px;">Phần thưởng giao kèo ván này:</div>
             <div id="popup-reward">Nội dung phần thưởng</div>
             <button id="btn-next-match" class="btn">XÁC NHẬN CHƠI TIẾP</button>
         </div>
@@ -62,7 +163,8 @@
     </div>
 
     <script>
-        const socket = io("https://GAME-CUA-BAN.onrender.com"); // <-- Thay link Render của bạn vào đây nhé!
+        // LƯU Ý: Bạn thay link Render của bạn vào đoạn dưới này nhé!
+        const socket = io("https://firstvnv-rgb.onrender.com"); 
 
         let myGender = null;
         let config = {
@@ -83,7 +185,6 @@
         const TILE_SIZE = 32;
 
         function preload() {
-            // Tạo đồ họa giả lập hình khối màu sắc cute, tươi sáng
             let canvas = this.textures.createCanvas('block_stone', 32, 32);
             let ctx = canvas.context; ctx.fillStyle = '#4a4e69'; ctx.fillRect(0,0,32,32); ctx.fillStyle = '#22223b'; ctx.fillRect(2,2,28,28); canvas.refresh();
 
@@ -116,7 +217,6 @@
             socket.on('resetMatch', (data) => {
                 drawGrid(data.grid, data.level); updateHeader(data.level, data.round);
                 document.getElementById('result-screen').classList.add('hidden');
-                // Xóa tàn dư cũ
                 for (let id in localMonsters) { localMonsters[id].destroy(); } localMonsters = {};
                 for (let k in localMushrooms) { localMushrooms[k].destroy(); } localMushrooms = {};
                 for (let k in localItems) { localItems[k].destroy(); } localItems = {};
@@ -162,12 +262,11 @@
             socket.on('mushroomExploded', (data) => {
                 let k = data.shroom.id; if (localMushrooms[k]) { localMushrooms[k].destroy(); delete localMushrooms[k]; }
                 
-                // Hiệu ứng tia lửa nổ 3D rực rỡ
                 data.explodedTiles.forEach(tile => {
                     let ef = sceneContext.add.rectangle(tile.x * TILE_SIZE + 16, tile.y * TILE_SIZE + 16, 28, 28, 0xf94144, 0.8).setZ(6);
                     sceneContext.tweens.add({ targets: ef, alpha: 0, duration: 300, onComplete: () => ef.destroy() });
                 });
-                drawGrid(data.newGrid);
+                drawGrid(data.newGrid, document.getElementById('txt-level').innerText * 1);
             });
 
             socket.on('updateItems', (serverItems) => {
@@ -181,7 +280,6 @@
 
             socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(150, 255, 0, 0); });
 
-            // Xử lý thông báo phân rã Chiến Thắng / Thất bại đấu trường
             socket.on('gameWin', (info) => { showEndPopup("CHIẾN THẮNG 🎉", info.rewardText, true); });
             socket.on('gameOver', () => { showEndPopup("THẤT BẠI 💔", "Bạn đã ngã xuống trước đối phương!", false); });
 
@@ -190,7 +288,6 @@
 
         function update() {}
 
-        // Hàm đổi màu map tự động theo từng màn chơi rất sinh động
         function drawGrid(grid, level = 1) {
             cells.forEach(c => c.destroy()); cells = [];
             let woodColor = level === 1 ? 0xe5989b : (level === 2 ? 0xf4a261 : 0x9a7b56);
@@ -235,7 +332,6 @@
             document.getElementById('btn-right').onmousedown = () => socket.emit('requestMove', { dirX: 1, dirY: 0 });
             document.getElementById('btn-bomb').onmousedown = () => socket.emit('requestPlant');
 
-            // Hỗ trợ cảm ứng điện thoại mượt mà
             document.getElementById('btn-up').ontouchstart = (e) => { e.preventDefault(); socket.emit('requestMove', { dirX: 0, dirY: -1 }); }
             document.getElementById('btn-down').ontouchstart = (e) => { e.preventDefault(); socket.emit('requestMove', { dirX: 0, dirY: 1 }); }
             document.getElementById('btn-left').ontouchstart = (e) => { e.preventDefault(); socket.emit('requestMove', { dirX: -1, dirY: 0 }); }
