@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Siêu Cấp V6.1</title>
+    <title>Bomberman Pro v7.1 - Đồng Bộ Bản Đồ</title>
     <style>
-        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
-        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #0f172a; text-align: center; }
-        .btn { padding: 15px 35px; font-size: 18px; font-weight: bold; border: none; border-radius: 30px; margin: 10px; color: white; width: 250px; cursor: pointer; }
-        .btn-nam { background: #0284c7; } .btn-nu { background: #db2777; }
-        #ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; color: white; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; z-index: 10; font-size: 15px; text-align: center; pointer-events: none; }
-        #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 999; }
-        .dpad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; }
-        .dpad-btn { background: #334155; color: white; font-weight: bold; font-size: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #475569; touch-action: none; cursor: pointer; }
-        .dpad-btn:active { background: #1e293b; transform: scale(0.95); }
-        #btn-plant { width: 90px; height: 90px; background: #dc2626; border-radius: 50%; border: 4px solid #fff; color: white; font-weight: bold; font-size: 16px; cursor: pointer; touch-action: none; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
-        #btn-plant:active { transform: scale(0.9); background: #b91c1c; }
+        body { margin: 0; padding: 0; background: #0f172a; font-family: system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
+        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); text-align: center; }
+        .btn { padding: 16px 35px; font-size: 18px; font-weight: bold; border: none; border-radius: 50px; margin: 12px; color: white; width: 260px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-nam { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .btn-nu { background: linear-gradient(135deg, #ec4899, #db2777); }
+        #ui-layer { position: absolute; top: 12px; left: 12px; right: 12px; color: white; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; font-size: 15px; text-align: center; pointer-events: none; }
+        #control-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 999; }
+        .dpad { display: grid; grid-template-columns: repeat(3, 65px); grid-template-rows: repeat(3, 65px); gap: 8px; }
+        .dpad-btn { background: #334155; color: white; font-weight: bold; font-size: 26px; border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 2px solid #475569; touch-action: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .dpad-btn:active { background: #1e293b; transform: scale(0.92); border-color: #38bdf8; }
+        #btn-plant { width: 95px; height: 95px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: bold; font-size: 16px; cursor: pointer; touch-action: none; box-shadow: 0 8px 20px rgba(220,38,38,0.4); transition: transform 0.1s; }
+        #btn-plant:active { transform: scale(0.88); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -23,16 +25,16 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #f59e0b; margin-bottom: 5px;">BOMBERMAN V6.1</h1>
-        <p style="color: #94a3b8; margin-top: 0; font-size: 14px;">Sửa triệt để lỗi liệt phím di chuyển trên điện thoại</p>
+        <h1 style="color: #f59e0b; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">BOMBERMAN V7.1</h1>
+        <p style="color: #94a3b8; margin-top: 0; font-size: 14px; padding: 0 20px;">Đã sửa triệt để lỗi nổ không mất gạch</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
 
     <div id="ui-layer" style="display: none;">
-        <div id="info-level" style="color: #fbbf24; font-weight: bold;">Cửa: 1 - Hiệp: 1</div>
-        <div id="info-reward" style="color: #34d399;">Phần thưởng: Đang tải...</div>
-        <div id="info-status" style="color: #f87171; font-weight: bold; margin-top: 3px;">MÁU: 100/100</div>
+        <div id="info-level" style="color: #fbbf24; font-weight: bold; font-size: 16px;">Cửa: 1 - Hiệp: 1</div>
+        <div id="info-reward" style="color: #34d399; margin: 3px 0;">Phần thưởng: Đang tải...</div>
+        <div id="info-status" style="color: #f87171; font-weight: bold;">MÁU: 100/100</div>
     </div>
     
     <div id="control-container" style="display: none;">
@@ -48,14 +50,14 @@
         const socket = io("https://mushroom-server.onrender.com");
         let myGender = null, sceneContext = null;
         let pSprites = {}, mSprites = {}, shroomSprites = {}, itemSprites = {};
-        let currentGrid = [];
-        let TILE_SIZE = 0; let MAP_OFFSET_Y = 100;
         
-        // Cấu hình di chuyển mượt mà
-        let lastMoveTime = 0; 
-        let moveDelay = 220; // Tốc độ di chuyển bước ô (ms)
-        let activeDirection = null; // Hướng đang được nhấn giữ liên tục
-        let intervalTimer = null;
+        // Quản lý Map bằng Group để xóa đi vẽ lại sạch sẽ không bị lỗi đè ảnh
+        let mapGroup = null; 
+        let currentGrid = [];
+        let TILE_SIZE = 0; let MAP_OFFSET_Y = 110;
+        
+        let activeDirection = null; 
+        let inputTimer = null;
 
         function startGame(gender) {
             myGender = gender;
@@ -77,55 +79,77 @@
 
         function preload() {
             sceneContext = this;
-            let createText = (key, color, isCircle=false) => {
+            let createTexture = (key, color, isCircle=false) => {
                 let canvas = document.createElement('canvas'); canvas.width = TILE_SIZE; canvas.height = TILE_SIZE;
                 let ctx = canvas.getContext('2d'); ctx.fillStyle = color;
                 if(isCircle) { ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill(); }
-                else { ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE); }
+                else { ctx.fillRect(1, 1, TILE_SIZE-2, TILE_SIZE-2); }
                 this.textures.addCanvas(key, canvas);
             };
-            createText('bg_grass', '#4caf50'); createText('stone', '#1e293b'); createText('brick', '#d97706');
-            createText('p_nam', '#0ea5e9', true); createText('p_nu', '#ec4899', true); createText('monster', '#a855f7', true);
-            createText('shroom', '#eab308', true); createText('item_speed', '#10b981'); createText('item_heal', '#ef4444');
+            createTexture('bg_grass', '#1e251c'); 
+            createTexture('stone', '#475569'); 
+            createTexture('brick', '#b45309');
+            createTexture('p_nam', '#0ea5e9', true); 
+            createTexture('p_nu', '#ec4899', true); 
+            createTexture('monster', '#a855f7', true);
+            createTexture('shroom', '#f59e0b', true); 
+            createTexture('item_speed', '#10b981'); 
+            createTexture('item_heal', '#ef4444');
         }
 
         function create() {
-            setupDpadControls(); // Kích hoạt hệ thống phím bấm nâng cao mới
+            // Tạo một static group để quản lý toàn bộ ô nền, gạch và đá
+            mapGroup = sceneContext.add.group();
+            setupInputHandlers();
 
             socket.on('initGame', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
 
             socket.on('updatePlayers', (serverPlayers) => {
-                for (let id in pSprites) { pSprites[id].destroy(); } pSprites = {};
                 for (let id in serverPlayers) {
                     let p = serverPlayers[id];
-                    let px = p.gridX * TILE_SIZE + TILE_SIZE/2;
-                    let py = p.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    pSprites[id] = sceneContext.add.sprite(px, py, `p_${p.gender}`).setDepth(10);
+                    let targetX = p.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let targetY = p.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+
+                    if (!pSprites[id]) {
+                        pSprites[id] = sceneContext.add.sprite(targetX, targetY, `p_${p.gender}`).setDepth(10);
+                    } else {
+                        sceneContext.tweens.add({ targets: pSprites[id], x: targetX, y: targetY, duration: 140 });
+                    }
+
                     if (id === socket.id) {
                         document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
                     }
+                }
+                for (let id in pSprites) {
+                    if (!serverPlayers[id]) { pSprites[id].destroy(); delete pSprites[id]; }
                 }
             });
 
             socket.on('playerMoved', (data) => {
                 if (pSprites[data.id]) {
-                    let px = data.gridX * TILE_SIZE + TILE_SIZE/2;
-                    let py = data.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    pSprites[data.id].setPosition(px, py);
+                    let targetX = data.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let targetY = data.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    sceneContext.tweens.add({ targets: pSprites[data.id], x: targetX, y: targetY, duration: 120 });
                 }
             });
 
-            socket.on('playerBuff', (data) => { if(data.type === 'speed') moveDelay = Math.max(100, moveDelay - 30); });
-            socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(100, 255, 0, 0); });
+            socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(120, 239, 68, 68); });
 
             socket.on('updateMonsters', (serverMonsters) => {
-                for (let id in mSprites) { mSprites[id].destroy(); } mSprites = {};
+                let activeIds = serverMonsters.map(m => m.id);
                 serverMonsters.forEach(m => {
-                    let mx = m.gridX * TILE_SIZE + TILE_SIZE/2;
-                    let my = m.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    mSprites[m.id] = sceneContext.add.sprite(mx, my, 'monster').setDepth(9);
+                    let targetX = m.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let targetY = m.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+
+                    if (!mSprites[m.id]) {
+                        mSprites[m.id] = sceneContext.add.sprite(targetX, targetY, 'monster').setDepth(9);
+                    } else {
+                        sceneContext.tweens.add({ targets: mSprites[m.id], x: targetX, y: targetY, duration: 450 });
+                    }
                 });
-                checkMonsterCollision(serverMonsters);
+                for (let id in mSprites) {
+                    if (!activeIds.includes(id)) { mSprites[id].destroy(); delete mSprites[id]; }
+                }
             });
 
             socket.on('updateItems', (serverItems) => {
@@ -142,32 +166,50 @@
                 let sx = shroom.gridX * TILE_SIZE + TILE_SIZE/2;
                 let sy = shroom.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
                 shroomSprites[shroom.id] = sceneContext.add.sprite(sx, sy, 'shroom').setDepth(8);
+                sceneContext.tweens.add({ targets: shroomSprites[shroom.id], scale: 1.15, duration: 300, yoyo: true, repeat: -1 });
             });
 
+            // Khi bom nổ nhận lưới map mới -> Cập nhật vẽ lại ngay lập tức
             socket.on('mushroomExploded', (data) => {
                 if (shroomSprites[data.shroom.id]) { shroomSprites[data.shroom.id].destroy(); delete shroomSprites[data.shroom.id]; }
+                
                 data.explodedTiles.forEach(tile => {
                     let fx = tile.x * TILE_SIZE + TILE_SIZE/2; let fy = tile.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    let fire = sceneContext.add.circle(fx, fy, TILE_SIZE/2 - 2, 0xf97316, 0.8).setDepth(11);
-                    sceneContext.tweens.add({ targets: fire, alpha: 0, duration: 300, onComplete: () => fire.destroy() });
+                    let fire = sceneContext.add.circle(fx, fy, TILE_SIZE/2 - 2, 0xef4444, 0.85).setDepth(11);
+                    sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.6, duration: 350, onComplete: () => fire.destroy() });
                 });
-                currentGrid = data.newGrid; drawMap();
+
+                currentGrid = data.newGrid; 
+                drawMap(); // Gọi vẽ lại để gạch biến mất đồng bộ
             });
 
-            socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười chiến thắng: ${data.winner.toUpperCase()}\nThưởng: ${data.reward}`); });
-            socket.on('resetMatch', (data) => { moveDelay = 220; currentGrid = data.grid; drawMap(); updateUI(data); });
+            socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười thắng: ${data.winner.toUpperCase()}\nPhần thưởng: ${data.reward}`); });
+            socket.on('resetMatch', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
         }
 
+        // Sửa hoàn toàn lỗi đè ảnh: Clear sạch các block cũ trước khi vẽ lại mảng lưới mới
         function drawMap() {
             if(!currentGrid || currentGrid.length === 0) return;
-            sceneContext.children.list.forEach(child => { if(child.texture && ['stone','brick','bg_grass'].includes(child.texture.key)) child.destroy(); });
+            
+            // Xóa sạch tất cả các hình ảnh cũ có trong Group map
+            mapGroup.clear(true, true);
             
             for (let y = 0; y < currentGrid.length; y++) {
                 for (let x = 0; x < currentGrid[y].length; x++) {
-                    let px = x * TILE_SIZE + TILE_SIZE/2; let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
-                    sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1);
-                    if (currentGrid[y][x] === 1) sceneContext.add.sprite(px, py, 'stone').setDepth(2);
-                    else if (currentGrid[y][x] === 2) sceneContext.add.sprite(px, py, 'brick').setDepth(3);
+                    let px = x * TILE_SIZE + TILE_SIZE/2; 
+                    let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    
+                    // Thêm cỏ vào group
+                    let grass = sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1);
+                    mapGroup.add(grass);
+                    
+                    if (currentGrid[y][x] === 1) {
+                        let stone = sceneContext.add.sprite(px, py, 'stone').setDepth(2);
+                        mapGroup.add(stone);
+                    } else if (currentGrid[y][x] === 2) {
+                        let brick = sceneContext.add.sprite(px, py, 'brick').setDepth(3);
+                        mapGroup.add(brick);
+                    }
                 }
             }
         }
@@ -177,79 +219,38 @@
             document.getElementById('info-reward').innerText = `Phần thưởng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
         }
 
-        // 🕹️ HỆ THỐNG ĐIỀU KHIỂN CHẠM/GIỮ POINTER ĐA NỀN TẢNG MỚI
-        function setupDpadControls() {
-            const executeMove = () => {
+        function setupInputHandlers() {
+            const sendMoveRequest = () => {
                 if (!activeDirection) return;
-                let now = Date.now();
-                if (now - lastMoveTime < moveDelay) return;
-
-                let mySprite = pSprites[socket.id];
-                if (!mySprite) return;
-                
-                let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
-                let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
-                
-                let dx = activeDirection.x;
-                let dy = activeDirection.y;
-                let nX = curGridX + dx;
-                let nY = curGridY + dy;
-
-                if (nY >= 0 && nY < 11 && nX >= 0 && nX < 15 && currentGrid[nY][nX] === 0) {
-                    lastMoveTime = now;
-                    // Cập nhật vị trí tạm thời ở client luôn cho mượt
-                    mySprite.setPosition(nX * TILE_SIZE + TILE_SIZE/2, nY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y);
-                    socket.emit('playerMove', { gridX: nX, gridY: nY });
-                }
+                socket.emit('requestMove', { dirX: activeDirection.x, dirY: activeDirection.y });
             };
 
-            const bindKey = (id, dx, dy) => {
-                const btn = document.getElementById(id);
-                
-                // Khi nhấn xuống (Chuột hoặc Ngón tay đều nhận)
-                btn.addEventListener('pointerdown', (e) => {
+            const bind = (id, dx, dy) => {
+                let el = document.getElementById(id);
+                el.addEventListener('pointerdown', (e) => {
                     e.preventDefault();
                     activeDirection = { x: dx, y: dy };
-                    executeMove();
-                    
-                    // Tạo vòng lặp chạy liên tục khi giữ đè nút
-                    if(intervalTimer) clearInterval(intervalTimer);
-                    intervalTimer = setInterval(executeMove, 50);
+                    sendMoveRequest();
+                    if(inputTimer) clearInterval(inputTimer);
+                    inputTimer = setInterval(sendMoveRequest, 180);
                 });
 
-                // Khi nhấc tay lên hoặc rời ngón tay khỏi nút
-                const stopMove = (e) => {
+                let stop = (e) => {
                     e.preventDefault();
                     activeDirection = null;
-                    if(intervalTimer) { clearInterval(intervalTimer); intervalTimer = null; }
+                    if(inputTimer) { clearInterval(inputTimer); inputTimer = null; }
                 };
-                btn.addEventListener('pointerup', stopMove);
-                btn.addEventListener('pointercancel', stopMove);
-                btn.addEventListener('pointerleave', stopMove);
+                el.addEventListener('pointerup', stop);
+                el.addEventListener('pointerleave', stop);
+                el.addEventListener('pointercancel', stop);
             };
 
-            bindKey('key-up', 0, -1);
-            bindKey('key-down', 0, 1);
-            bindKey('key-left', -1, 0);
-            bindKey('key-right', 1, 0);
-        }
-
-        function checkMonsterCollision(monsters) {
-            let mySprite = pSprites[socket.id]; if (!mySprite) return;
-            let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
-            let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
-            monsters.forEach(m => {
-                if (m.gridX === curGridX && m.gridY === curGridY) {
-                    socket.emit('takeDamage', { amount: 15 });
-                }
-            });
+            bind('key-up', 0, -1); bind('key-down', 0, 1);
+            bind('key-left', -1, 0); bind('key-right', 1, 0);
         }
 
         function handlePlant() {
-            let mySprite = pSprites[socket.id]; if (!mySprite) return;
-            let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
-            let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
-            socket.emit('placeMushroom', { gridX: curGridX, gridY: curGridY });
+            socket.emit('requestPlant');
         }
     </script>
 </body>
