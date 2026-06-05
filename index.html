@@ -116,13 +116,13 @@
             ctx.fillStyle = '#fff'; ctx.fillRect(4,6,4,4); ctx.fillRect(14,6,4,4);
             this.textures.addCanvas('monster', canvasMonster);
 
-            // 🔵 Nhân vật Nam (Hoàng tử Neon Blue)
+            // 🏃‍♂️‍➡️ Nhân vật Nam (Anh Iu Neon Blue)
             let canvasNam = document.createElement('canvas'); canvasNam.width = TILE_SIZE * 0.8; canvasNam.height = TILE_SIZE * 0.8;
             ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(canvasNam.width/2, canvasNam.height/2, canvasNam.width/2, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
             this.textures.addCanvas('p_nam', canvasNam);
 
-            // 🔴 Nhân vật Nữ (Công chúa Neon Pink)
+            // 🏃‍♀️ Nhân vật Nữ (Em Bé Neon Pink)
             let canvasNu = document.createElement('canvas'); canvasNu.width = TILE_SIZE * 0.8; canvasNu.height = TILE_SIZE * 0.8;
             ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(canvasNu.width/2, canvasNu.height/2, canvasNu.width/2, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
