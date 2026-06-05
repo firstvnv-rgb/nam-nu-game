@@ -3,22 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bomberman Tình Yêu V5.0</title>
+    <title>Bomberman Siêu Cấp V6.0</title>
     <style>
-        body { margin: 0; padding: 0; background: #111; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; user-select: none; }
-        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: linear-gradient(135deg, #111c24, #080d11); text-align: center; padding: 20px; box-sizing: border-box; }
-        .btn { padding: 16px 40px; font-size: 18px; font-weight: bold; border: none; border-radius: 50px; margin: 12px; color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.4); width: 80%; max-width: 280px; letter-spacing: 1px; transition: 0.2s; }
-        .btn-nam { background: linear-gradient(45deg, #00d2ff, #0066ff); }
-        .btn-nu { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
-        #ui-layer { position: absolute; top: 15px; left: 15px; right: 15px; color: white; background: rgba(10, 15, 20, 0.85); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; backdrop-filter: blur(10px); }
-        #info-level { font-weight: 800; color: #ffeb3b; font-size: 18px; text-transform: uppercase; }
-        #info-reward { color: #00ffcc; margin-top: 5px; font-size: 14px; font-weight: 600; }
-        #info-status { color: #ff8a80; margin-top: 5px; font-size: 14px; font-weight: bold; }
-        #control-container { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 999; pointer-events: none; }
-        .dpad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 4px; pointer-events: auto; }
-        .dpad-btn { background: #2c3e50; border: 2px solid #34495e; color: white; font-weight: bold; font-size: 22px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .dpad-btn:active { background: #1a252f; transform: scale(0.92); }
-        #btn-plant { pointer-events: auto; width: 90px; height: 90px; background: linear-gradient(135deg, #ff5722, #bf360c); border-radius: 50%; border: 4px solid #fff; color: white; font-weight: 900; font-size: 16px; box-shadow: 0 8px 25px rgba(211,47,47,0.6); }
+        body { margin: 0; padding: 0; background: #111; font-family: sans-serif; overflow: hidden; user-select: none; }
+        #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; background: #0f172a; text-align: center; }
+        .btn { padding: 15px 35px; font-size: 18px; font-weight: bold; border: none; border-radius: 30px; margin: 10px; color: white; width: 250px; }
+        .btn-nam { background: #0284c7; } .btn-nu { background: #db2777; }
+        #ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; color: white; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; z-index: 10; font-size: 15px; text-align: center; }
+        #control-container { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 99; }
+        .dpad { display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px); gap: 5px; }
+        .dpad-btn { background: #334155; color: white; font-weight: bold; font-size: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #475569; }
+        #btn-plant { width: 85px; height: 85px; background: #dc2626; border-radius: 50%; border: 3px solid #fff; color: white; font-weight: bold; font-size: 16px; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -26,17 +21,16 @@
 <body>
 
     <div id="lobby">
-        <h1 style="color: #ffeb3b; font-size: 32px; font-weight: 900;">BOMBERMAN</h1>
-        <h2 style="color: #ff4081; font-size: 20px;">Bản Siêu Cấp V5.0</h2>
-        <p style="color: #8a99a6; font-size: 14px;">Chống xuyên tường - Rơi vật phẩm tăng tốc & máu</p>
+        <h1 style="color: #f59e0b;">BOMBERMAN V6.0</h1>
+        <p>Sửa lỗi hiển thị đen màn hình cực chuẩn</p>
         <button class="btn btn-nam" onclick="startGame('nam')">HOÀNG TỬ (NAM)</button>
         <button class="btn btn-nu" onclick="startGame('nu')">CÔNG CHÚA (NỮ)</button>
     </div>
 
     <div id="ui-layer" style="display: none;">
-        <div id="info-level">Cửa: 1 - Hiệp: 1</div>
-        <div id="info-reward">Thắng được: Đang tải...</div>
-        <div id="info-status">MÁU CỦA BẠN: 100/100</div>
+        <div id="info-level" style="color: #fbbf24; font-weight: bold;">Cửa: 1 - Hiệp: 1</div>
+        <div id="info-reward" style="color: #34d399;">Phần thưởng: Đang tải...</div>
+        <div id="info-status" style="color: #f87171; font-weight: bold; margin-top: 3px;">MÁU: 100/100</div>
     </div>
     
     <div id="control-container" style="display: none;">
@@ -50,213 +44,160 @@
 
     <script>
         const socket = io("https://mushroom-server.onrender.com");
-
-        let myGender = null; let sceneContext = null; let localPlayer = null; let remotePlayer = null;
-        let gridContainer, bricksGroup, stoneGroup, monstersGroup, mushroomsGroup, itemsGroup;
-        let TILE_SIZE = 0; let MAP_OFFSET_Y = 110; let lastDamageTime = 0;
-        let baseSpeed = 130; let bonusSpeed = 0;
-
-        let moveState = { up: false, down: false, left: false, right: false };
+        let myGender = null, sceneContext = null;
+        let pSprites = {}, mSprites = {}, shroomSprites = {}, itemSprites = {};
+        let currentGrid = [];
+        let TILE_SIZE = 0; let MAP_OFFSET_Y = 100;
+        let lastMoveTime = 0; let moveDelay = 250; // Tốc độ di chuyển mặc định theo ô (ms)
 
         function startGame(gender) {
             myGender = gender;
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'block';
             document.getElementById('control-container').style.display = 'flex';
-            initPhaser(); setupHtmlDpad(); socket.emit('joinGame', gender);
-        }
-
-        function setupHtmlDpad() {
-            const bindDirection = (id, prop) => {
-                const el = document.getElementById(id);
-                el.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[prop] = true; });
-                el.addEventListener('touchend', (e) => { e.preventDefault(); moveState[prop] = false; });
-                bindDirection('mousedown', () => { moveState[prop] = true; });
-                bindDirection('mouseup', () => { moveState[prop] = false; });
-            };
-            bindDirection('key-up', 'up'); bindDirection('key-down', 'down'); bindDirection('key-left', 'left'); bindDirection('key-right', 'right');
+            initPhaser(); setupDpadEvents();
+            socket.emit('joinGame', gender);
         }
 
         function initPhaser() {
+            TILE_SIZE = Math.floor(window.innerWidth / 15);
             const config = {
                 type: Phaser.AUTO, width: window.innerWidth, height: window.innerHeight, parent: document.body,
-                physics: { default: 'arcade', arcade: { debug: false } },
-                scene: { preload: preload, create: create, update: update }
+                scene: { preload: preload, create: create }
             };
             new Phaser.Game(config);
         }
 
         function preload() {
-            sceneContext = this; TILE_SIZE = Math.floor(window.innerWidth / 15);
-
-            // Tạo texture nhân vật & map bằng canvas vẽ hình học cơ bản
-            let canvasBG = document.createElement('canvas'); canvasBG.width = TILE_SIZE; canvasBG.height = TILE_SIZE;
-            let ctx = canvasBG.getContext('2d'); ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-            this.textures.addCanvas('bg_grass', canvasBG);
-
-            let canvasStone = document.createElement('canvas'); canvasStone.width = TILE_SIZE; canvasStone.height = TILE_SIZE;
-            ctx = canvasStone.getContext('2d'); ctx.fillStyle = '#1c2833'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
-            this.textures.addCanvas('stone', canvasStone);
-
-            let canvasBrick = document.createElement('canvas'); canvasBrick.width = TILE_SIZE; canvasBrick.height = TILE_SIZE;
-            ctx = canvasBrick.getContext('2d'); ctx.fillStyle = '#e67e22'; ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE);
-            this.textures.addCanvas('brick', canvasBrick);
-
-            let canvasMonster = document.createElement('canvas'); canvasMonster.width = TILE_SIZE; canvasMonster.height = TILE_SIZE;
-            ctx = canvasMonster.getContext('2d'); ctx.fillStyle = '#a832a4'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
-            this.textures.addCanvas('monster', canvasMonster);
-
-            let canvasNam = document.createElement('canvas'); canvasNam.width = TILE_SIZE; canvasNam.height = TILE_SIZE;
-            ctx = canvasNam.getContext('2d'); ctx.fillStyle = '#00d2ff'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
-            this.textures.addCanvas('p_nam', canvasNam);
-
-            let canvasNu = document.createElement('canvas'); canvasNu.width = TILE_SIZE; canvasNu.height = TILE_SIZE;
-            ctx = canvasNu.getContext('2d'); ctx.fillStyle = '#ff416c'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill();
-            this.textures.addCanvas('p_nu', canvasNu);
-
-            let canvasShroom = document.createElement('canvas'); canvasShroom.width = TILE_SIZE; canvasShroom.height = TILE_SIZE;
-            ctx = canvasShroom.getContext('2d'); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.35, 0, Math.PI*2); ctx.fill();
-            this.textures.addCanvas('shroom', canvasShroom);
-
-            // VẬT PHẨM: Giày tăng tốc (Màu xanh dương) và Bình máu (Màu đỏ tươi)
-            let canvasSpeed = document.createElement('canvas'); canvasSpeed.width = TILE_SIZE; canvasSpeed.height = TILE_SIZE;
-            ctx = canvasSpeed.getContext('2d'); ctx.fillStyle = '#2ecc71'; ctx.fillRect(TILE_SIZE*0.2, TILE_SIZE*0.2, TILE_SIZE*0.6, TILE_SIZE*0.6);
-            this.textures.addCanvas('item_speed', canvasSpeed);
-
-            let canvasHeal = document.createElement('canvas'); canvasHeal.width = TILE_SIZE; canvasHeal.height = TILE_SIZE;
-            ctx = canvasHeal.getContext('2d'); ctx.fillStyle = '#e74c3c'; ctx.fillRect(TILE_SIZE*0.2, TILE_SIZE*0.2, TILE_SIZE*0.6, TILE_SIZE*0.6);
-            this.textures.addCanvas('item_heal', canvasHeal);
+            sceneContext = this;
+            // Vẽ đồ họa hình khối tránh lỗi thiếu file ảnh nền
+            let createText = (key, color, isCircle=false) => {
+                let canvas = document.createElement('canvas'); canvas.width = TILE_SIZE; canvas.height = TILE_SIZE;
+                let ctx = canvas.getContext('2d'); ctx.fillStyle = color;
+                if(isCircle) { ctx.beginPath(); ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE*0.4, 0, Math.PI*2); ctx.fill(); }
+                else { ctx.fillRect(0,0,TILE_SIZE,TILE_SIZE); }
+                this.textures.addCanvas(key, canvas);
+            };
+            createText('bg_grass', '#4caf50'); createText('stone', '#1e293b'); createText('brick', '#d97706');
+            createText('p_nam', '#0ea5e9', true); createText('p_nu', '#ec4899', true); createText('monster', '#a855f7', true);
+            createText('shroom', '#eab308', true); createText('item_speed', '#10b981'); createText('item_heal', '#ef4444');
         }
 
         function create() {
-            gridContainer = this.add.container(0, 0); 
-            stoneGroup = this.physics.add.staticGroup(); bricksGroup = this.physics.add.staticGroup();
-            mushroomsGroup = this.physics.add.group(); monstersGroup = this.physics.add.group(); itemsGroup = this.add.group();
-
-            this.cameras.main.setBackgroundColor('#111');
-
-            socket.on('initGame', (data) => { drawMap(data.grid); updateUI(data); });
+            socket.on('initGame', (data) => { currentGrid = data.grid; drawMap(); updateUI(data); });
 
             socket.on('updatePlayers', (serverPlayers) => {
+                // Xóa sprite cũ vẽ sprite mới theo Grid chuẩn xác
+                for (let id in pSprites) { pSprites[id].destroy(); } pSprites = {};
                 for (let id in serverPlayers) {
                     let p = serverPlayers[id];
-                    let screenX = (p.x / 40) * TILE_SIZE;
-                    let screenY = (p.y / 40) * TILE_SIZE + MAP_OFFSET_Y;
-
+                    let px = p.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let py = p.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    pSprites[id] = sceneContext.add.sprite(px, py, `p_${p.gender}`).setDepth(10);
                     if (id === socket.id) {
-                        if (!localPlayer) {
-                            localPlayer = sceneContext.physics.add.sprite(screenX, screenY, `p_${p.gender}`);
-                            localPlayer.setCollideWorldBounds(true);
-                            localPlayer.setBodySize(TILE_SIZE * 0.55, TILE_SIZE * 0.55);
-                            sceneContext.physics.add.collider(localPlayer, stoneGroup);
-                            sceneContext.physics.add.collider(localPlayer, bricksGroup);
-                        } else { localPlayer.setPosition(screenX, screenY); }
                         document.getElementById('info-status').innerText = `MÁU CỦA BẠN: ${p.hp}/100`;
-                    } else {
-                        if (!remotePlayer) { remotePlayer = sceneContext.add.sprite(screenX, screenY, `p_${p.gender}`); remotePlayer.id = id; }
-                        else { remotePlayer.setPosition(screenX, screenY); }
                     }
                 }
             });
 
-            socket.on('playerMoved', (data) => {
-                if (remotePlayer && remotePlayer.id === data.id) {
-                    remotePlayer.setPosition((data.x / 40) * TILE_SIZE, (data.y / 40) * TILE_SIZE + MAP_OFFSET_Y);
-                }
-            });
-
-            socket.on('playerBuff', (data) => { if(data.type === 'speed') bonusSpeed = data.amount; });
-            socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(150, 255, 0, 0); });
+            socket.on('playerBuff', (data) => { if(data.type === 'speed') moveDelay = Math.max(120, moveDelay - 30); });
+            socket.on('hurtEffect', () => { sceneContext.cameras.main.flash(100, 255, 0, 0); });
 
             socket.on('updateMonsters', (serverMonsters) => {
-                monstersGroup.clear(true, true);
+                for (let id in mSprites) { mSprites[id].destroy(); } mSprites = {};
                 serverMonsters.forEach(m => {
-                    let mon = monstersGroup.create((m.x / 40) * TILE_SIZE, (m.y / 40) * TILE_SIZE + MAP_OFFSET_Y, 'monster');
-                    mon.setDepth(50);
+                    let mx = m.gridX * TILE_SIZE + TILE_SIZE/2;
+                    let my = m.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    mSprites[m.id] = sceneContext.add.sprite(mx, my, 'monster').setDepth(9);
                 });
+                checkMonsterCollision(serverMonsters);
             });
 
-            // VẼ VẬT PHẨM RƠI TRÊN SÂN
             socket.on('updateItems', (serverItems) => {
-                itemsGroup.clear(true, true);
+                for (let key in itemSprites) { itemSprites[key].destroy(); } itemSprites = {};
                 for (let key in serverItems) {
                     let it = serverItems[key];
-                    let itemSprite = sceneContext.add.sprite(it.x * TILE_SIZE + TILE_SIZE/2, it.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y, `item_${it.type}`);
-                    itemsGroup.add(itemSprite);
+                    let ix = it.x * TILE_SIZE + TILE_SIZE/2;
+                    let iy = it.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    itemSprites[key] = sceneContext.add.sprite(ix, iy, `item_${it.type}`).setDepth(5).setScale(0.7);
                 }
             });
 
             socket.on('mushroomPlaced', (shroom) => {
-                let m = sceneContext.physics.add.sprite((shroom.x / 40) * TILE_SIZE, (shroom.y / 40) * TILE_SIZE + MAP_OFFSET_Y, 'shroom');
-                m.id = shroom.id; mushroomsGroup.add(m);
+                let sx = shroom.gridX * TILE_SIZE + TILE_SIZE/2;
+                let sy = shroom.gridY * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                shroomSprites[shroom.id] = sceneContext.add.sprite(sx, sy, 'shroom').setDepth(8);
             });
 
             socket.on('mushroomExploded', (data) => {
-                mushroomsGroup.getChildren().forEach(m => { if (m && m.id === data.shroom.id) m.destroy(); });
+                if (shroomSprites[data.shroom.id]) { shroomSprites[data.shroom.id].destroy(); delete shroomSprites[data.shroom.id]; }
                 data.explodedTiles.forEach(tile => {
-                    let fire = sceneContext.add.circle(tile.x * TILE_SIZE + TILE_SIZE/2, tile.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y, TILE_SIZE/2 - 2, 0xff5722, 0.85);
-                    sceneContext.tweens.add({ targets: fire, alpha: 0, scale: 0.7, duration: 250, onComplete: () => fire.destroy() });
+                    let fx = tile.x * TILE_SIZE + TILE_SIZE/2; let fy = tile.y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    let fire = sceneContext.add.circle(fx, fy, TILE_SIZE/2 - 2, 0xf97316, 0.8).setDepth(11);
+                    sceneContext.tweens.add({ targets: fire, alpha: 0, duration: 300, onComplete: () => fire.destroy() });
                 });
-                drawMap(data.newGrid);
+                currentGrid = data.newGrid; drawMap();
             });
 
-            socket.on('gameOver', (data) => { alert(`KẾT THÚC!\nNgười thắng: ${data.winner.toUpperCase()}\nNhận được: ${data.reward}`); });
-            socket.on('resetMatch', (data) => { bonusSpeed = 0; drawMap(data.grid); updateUI(data); });
+            socket.on('gameOver', (data) => { alert(`KẾT THÚC VÒNG ĐẤU!\nNgười chiến thắng: ${data.winner.toUpperCase()}\nThưởng: ${data.reward}`); });
+            socket.on('resetMatch', (data) => { moveDelay = 250; currentGrid = data.grid; drawMap(); updateUI(data); });
         }
 
-        function drawMap(grid) {
-            stoneGroup.clear(true, true); bricksGroup.clear(true, true); gridContainer.removeAll(true);
-            let grassGrid = sceneContext.add.grid(window.innerWidth/2, (grid.length * TILE_SIZE)/2 + MAP_OFFSET_Y, window.innerWidth, grid.length * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0x4caf50, 1, 0x388e3c, 0.2);
-            gridContainer.add(grassGrid);
-
-            for (let y = 0; y < grid.length; y++) {
-                for (let x = 0; x < grid[y].length; x++) {
-                    let posX = x * TILE_SIZE + TILE_SIZE / 2; let posY = y * TILE_SIZE + TILE_SIZE / 2 + MAP_OFFSET_Y;
-                    if (grid[y][x] === 1) stoneGroup.create(posX, posY, 'stone').setDepth(30);
-                    else if (grid[y][x] === 2) bricksGroup.create(posX, posY, 'brick').setDepth(31);
+        function drawMap() {
+            if(!currentGrid || currentGrid.length === 0) return;
+            sceneContext.children.list.forEach(child => { if(child.texture && ['stone','brick','bg_grass'].includes(child.texture.key)) child.destroy(); });
+            
+            for (let y = 0; y < currentGrid.length; y++) {
+                for (let x = 0; x < currentGrid[y].length; x++) {
+                    let px = x * TILE_SIZE + TILE_SIZE/2; let py = y * TILE_SIZE + TILE_SIZE/2 + MAP_OFFSET_Y;
+                    sceneContext.add.sprite(px, py, 'bg_grass').setDepth(1);
+                    if (currentGrid[y][x] === 1) sceneContext.add.sprite(px, py, 'stone').setDepth(2);
+                    else if (currentGrid[y][x] === 2) sceneContext.add.sprite(px, py, 'brick').setDepth(3);
                 }
             }
         }
 
         function updateUI(data) {
             document.getElementById('info-level').innerText = `Cửa: ${data.level} - Hiệp: ${data.round}`;
-            document.getElementById('info-reward').innerText = `Thắng được: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
+            document.getElementById('info-reward').innerText = `Phần thưởng: ${myGender === 'nam' ? data.reward.nam : data.reward.nu}`;
         }
 
-        function update() {
-            if (!localPlayer) return;
-            let currentSpeed = baseSpeed + bonusSpeed;
-            let vx = 0; let vy = 0;
+        function setupDpadEvents() {
+            const handleMove = (dx, dy) => {
+                let now = Date.now(); if (now - lastMoveTime < moveDelay) return;
+                let mySprite = pSprites[socket.id]; if (!mySprite) return;
+                
+                let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
+                let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
+                let nX = curGridX + dx; let nY = curGridY + dy;
 
-            if (moveState.left) vx = -currentSpeed; else if (moveState.right) vx = currentSpeed;
-            if (moveState.up) vy = -currentSpeed; else if (moveState.down) vy = currentSpeed;
+                if (nY >= 0 && nY < 11 && nX >= 0 && nX < 15 && currentGrid[nY][nX] === 0) {
+                    lastMoveTime = now;
+                    socket.emit('playerMove', { gridX: nX, gridY: nY });
+                }
+            };
+            document.getElementById('key-up').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(0, -1); });
+            document.getElementById('key-down').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(0, 1); });
+            document.getElementById('key-left').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(-1, 0); });
+            document.getElementById('key-right').addEventListener('touchstart', (e) => { e.preventDefault(); handleMove(1, 0); });
+        }
 
-            localPlayer.body.setVelocity(vx, vy);
-
-            if (vx !== 0 || vy !== 0) {
-                socket.emit('playerMove', { x: (localPlayer.x / TILE_SIZE) * 40, y: ((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE) * 40 });
-            }
-
-            if (monstersGroup.getChildren().length > 0) {
-                monstersGroup.getChildren().forEach(monster => {
-                    if (Phaser.Math.Distance.Between(localPlayer.x, localPlayer.y, monster.x, monster.y) < TILE_SIZE * 0.5) {
-                        let now = Date.now();
-                        if (now - lastDamageTime > 1000) {
-                            lastDamageTime = now;
-                            socket.emit('takeDamage', { amount: 20 });
-                            sceneContext.cameras.main.flash(100, 255, 0, 0);
-                        }
-                    }
-                });
-            }
+        function checkMonsterCollision(monsters) {
+            let mySprite = pSprites[socket.id]; if (!mySprite) return;
+            let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
+            let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
+            monsters.forEach(m => {
+                if (m.gridX === curGridX && m.gridY === curGridY) {
+                    socket.emit('takeDamage', { amount: 15 });
+                }
+            });
         }
 
         function handlePlant() {
-            if (localPlayer) {
-                let currentGridX = Math.floor(localPlayer.x / TILE_SIZE);
-                let currentGridY = Math.floor((localPlayer.y - MAP_OFFSET_Y) / TILE_SIZE);
-                socket.emit('placeMushroom', { x: currentGridX * 40 + 20, y: currentGridY * 40 + 20 });
-            }
+            let mySprite = pSprites[socket.id]; if (!mySprite) return;
+            let curGridX = Math.round((mySprite.x - TILE_SIZE/2) / TILE_SIZE);
+            let curGridY = Math.round((mySprite.y - MAP_OFFSET_Y - TILE_SIZE/2) / TILE_SIZE);
+            socket.emit('placeMushroom', { gridX: curGridX, gridY: curGridY });
         }
     </script>
 </body>
